@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	ghrecon "github.com/anotherhadi/gh-recon/gh-recon"
 	"github.com/charmbracelet/log"
 	"github.com/google/go-github/v72/github"
 )
@@ -21,7 +22,7 @@ func main() {
 		fmt.Println("Please provide a username with the --username flag")
 		os.Exit(1)
 	}
-	err := parseUsername(username)
+	err := ghrecon.ParseUsername(username)
 	if err != nil {
 		log.Error("Invalid username", "err", err)
 		os.Exit(1)
@@ -38,10 +39,26 @@ func main() {
 
 	ctx := context.Background()
 
-	header()
-	userInfo(client, ctx, username)
-	orgs(client, ctx, username)
-	keys(client, ctx, username)
-	socials(client, username)
-	commits(client, ctx, username)
+	styles := log.DefaultStyles()
+	styles.Levels[log.InfoLevel] = styles.Levels[log.InfoLevel].Foreground(ghrecon.Grey)
+	logger := log.NewWithOptions(os.Stderr, log.Options{
+		ReportCaller:    false,
+		ReportTimestamp: false,
+	})
+	logger.SetStyles(styles)
+
+	r := ghrecon.NewRecon(
+		client,
+		logger,
+		ctx,
+	)
+
+	ghrecon.Header()
+	r.User(username)
+	r.Orgs(username)
+	r.SshKeys(username)
+	r.GpgKeys(username)
+	r.SshSigningKeys(username)
+	r.Socials(username)
+	r.Commits(username)
 }

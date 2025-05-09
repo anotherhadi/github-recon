@@ -1,38 +1,19 @@
-package main
+package ghrecon
 
 import (
-	"context"
 	"fmt"
-	"os"
-
-	"github.com/charmbracelet/log"
-	"github.com/google/go-github/v72/github"
 )
 
-func userInfo(client *github.Client, ctx context.Context, username string) {
-	fmt.Println(
-		GreyStyle.Render("[")+
-			GreenStyle.Render("-")+
-			GreyStyle.Render("]"),
-		GreyStyle.Render("Fetching user info...\n"),
-	)
-
-	user, resp, err := client.Users.Get(ctx, username)
+func (r Recon) User(username string) {
+	user, resp, err := r.client.Users.Get(r.ctx, username)
 	if resp.StatusCode == 404 {
-		fmt.Println(
-			GreyStyle.Render("[")+
-				RedStyle.Render("x")+
-				GreyStyle.Render("]"),
-			GreyStyle.Render("Error:"),
-			RedStyle.Render("User not found"),
-		)
-		os.Exit(1)
+		r.logger.Fatal("User not found")
 	}
 	if err != nil {
-		log.Error("Failed to fetch user's information", "err", err)
-		os.Exit(1)
+		r.logger.Fatal("Failed to fetch user's information", "err", err)
 	}
 
+	PrintTitle("👤 User informations")
 	PrintInfo("Username", user.GetLogin())
 	PrintInfo("ID", fmt.Sprintf("%d", user.GetID()))
 	PrintInfo("Avatar URL", user.GetAvatarURL())

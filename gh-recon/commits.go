@@ -1,19 +1,13 @@
-package main
+package ghrecon
 
 import (
-	"context"
 	"fmt"
 
-	"github.com/charmbracelet/log"
 	"github.com/google/go-github/v72/github"
 )
 
-func commits(client *github.Client, ctx context.Context, username string) {
-	// Commits
-	fmt.Println(
-		GreyStyle.Render("[")+GreenStyle.Render("+")+GreyStyle.Render("]"),
-		GreyStyle.Render("Commits:\n"),
-	)
+func (r Recon) Commits(username string) {
+	PrintTitle("🐙 Commits")
 
 	seenNames := make(map[string]struct{})
 	seenEmails := make(map[string]struct{})
@@ -22,13 +16,13 @@ func commits(client *github.Client, ctx context.Context, username string) {
 	collect := func(order string) error {
 		opts := &github.SearchOptions{
 			Sort:        "author-date",
-			Order:       order, // "desc" ou "asc"
+			Order:       order,
 			ListOptions: github.ListOptions{PerPage: 100},
 		}
 		for page := 1; page <= 10; page++ {
 			opts.ListOptions.Page = page
-			result, resp, err := client.Search.Commits(
-				ctx,
+			result, resp, err := r.client.Search.Commits(
+				r.ctx,
 				fmt.Sprintf("author:%s", username),
 				opts,
 			)
@@ -69,11 +63,9 @@ func commits(client *github.Client, ctx context.Context, username string) {
 	}
 
 	if err := collect("desc"); err != nil {
-		log.Error("Failed to fetch commits", "err", err)
-		return
+		r.logger.Error("Failed to fetch commits", "err", err, "order", "desc")
 	}
 	if err := collect("asc"); err != nil {
-		log.Error("Failed to fetch commits", "err", err)
-		return
+		r.logger.Error("Failed to fetch commits", "err", err, "order", "asc")
 	}
 }

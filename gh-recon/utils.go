@@ -1,4 +1,4 @@
-package main
+package ghrecon
 
 import (
 	"fmt"
@@ -22,12 +22,12 @@ var (
 	RedStyle   = lipgloss.NewStyle().Foreground(Red)
 )
 
-func header() {
+func Header() {
 	asciiArt := "        __                       \n  ___ _/ /  _______ _______  ___ \n / _ `/ _ \\/ __/ -_) __/ _ \\/ _ \\\n \\_, /_//_/_/  \\__/\\__/\\___/_//_/\n/___/                            "
 	fmt.Println(GreyStyle.Render(lipgloss.JoinVertical(lipgloss.Right, asciiArt, "@anotherhadi\n")))
 }
 
-func parseUsername(username string) error {
+func ParseUsername(username string) error {
 	if username == "" {
 		return fmt.Errorf("username is required")
 	}
@@ -83,11 +83,20 @@ func FetchGitHubAPI(github *github.Client, token, path string) ([]byte, error) {
 	return bodyBytes, nil
 }
 
+func PrintTitle(title string) {
+	style := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#7287fd"))
+	fmt.Println(style.Render(title) + "\n")
+}
+
 func PrintInfo(key, value string, more ...string) {
-	if value == "" || value == "0" || value == "0001-01-01 00:00:00 +0000 UTC" {
+	if value == "" || value == "0001-01-01 00:00:00 +0000 UTC" {
 		return
 	}
-	fmt.Printf("%s %s", GreyStyle.Render(key+":"), GreenStyle.Render(value))
+	if strings.HasSuffix(key, "n°") {
+		fmt.Printf(" %s %s", GreyStyle.Render(key), value)
+	} else {
+		fmt.Printf(" %s %s", GreyStyle.Render(key+":"), value)
+	}
 	if len(more) > 0 {
 		fmt.Printf(" %s", GreyStyle.Render("("+strings.Join(more, ", ")+")"))
 	}
