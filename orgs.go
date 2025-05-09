@@ -18,7 +18,7 @@ func orgs(client *github.Client, ctx context.Context, username string) {
 			GreyStyle.Render("[")+
 				RedStyle.Render("x")+
 				GreyStyle.Render("]"),
-			GreyStyle.Render("No organizations found for user "+username),
+			GreyStyle.Render("No organizations found\n"),
 		)
 	} else {
 		fmt.Println(
