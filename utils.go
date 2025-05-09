@@ -83,11 +83,15 @@ func FetchGitHubAPI(github *github.Client, token, path string) ([]byte, error) {
 	return bodyBytes, nil
 }
 
-func PrintInfo(key, value string) {
+func PrintInfo(key, value string, more ...string) {
 	if value == "" || value == "0" || value == "0001-01-01 00:00:00 +0000 UTC" {
 		return
 	}
-	fmt.Printf("%s %s\n", GreyStyle.Render(key+":"), GreenStyle.Render(value))
+	fmt.Printf("%s %s", GreyStyle.Render(key+":"), GreenStyle.Render(value))
+	if len(more) > 0 {
+		fmt.Printf(" %s", GreyStyle.Render("("+strings.Join(more, ", ")+")"))
+	}
+	fmt.Println()
 }
 
 func WaitForRateLimit(resp *github.Response) {
