@@ -23,8 +23,34 @@ This tool is intended for educational purposes only. Use responsibly and ensure 
 
 ## Installation
 
+### With Go
+
 ```bash
 go get github.com/anotherhadi/gh-recon
+```
+
+### With Nix/NixOS
+
+**From anywhere (using the repo URL):**
+
+```bash
+nix run github:anotherhadi/gh-recon -- --username TARGET_USER [--token YOUR_TOKEN]
+```
+
+**Permanent Installation:**
+
+```bash
+# add the flake to your flake.nix
+{
+  inputs = {
+    gh-recon.url = "github:anotherhadi/gh-recon";
+  };
+}
+
+# then add it to your packages
+environment.systemPackages = with pkgs; [ # or home.packages
+  gh-recon
+];
 ```
 
 ## Usage
