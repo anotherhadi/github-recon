@@ -1,5 +1,11 @@
 # GH-Recon
 
+<p>
+    <a href="https://github.com/anotherhadi/gh-recon/releases"><img src="https://img.shields.io/github/release/anotherhadi/gh-recon.svg" alt="Latest Release"></a>
+    <a href="https://pkg.go.dev/github.com/anotherhadi/gh-recon?tab=doc"><img src="https://godoc.org/github.com/anotherhadi/gh-recon?status.svg" alt="GoDoc"></a>
+    <a href="https://goreportcard.com/report/github.com/anotherhadi/gh-recon"><img src="https://goreportcard.com/badge/github.com/anotherhadi/gh-recon" alt="GoReportCard"></a>
+</p>
+
 ## Project Overview
 
 Fetches and aggregates public OSINT data for a GitHub user, leveraging Go and the GitHub API.
