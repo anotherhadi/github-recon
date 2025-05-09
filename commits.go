@@ -46,10 +46,22 @@ func commits(client *github.Client, ctx context.Context, username string) {
 				if _, seen := seenNames[name]; !seen {
 					seenNames[name] = struct{}{}
 					names = append(names, name)
+					PrintInfo(
+						"Name "+fmt.Sprint(len(names)),
+						name,
+						"from "+item.GetRepository().Owner.GetLogin()+"/"+item.GetRepository().
+							GetName(),
+					)
 				}
 				if _, seen := seenEmails[email]; !seen {
 					seenEmails[email] = struct{}{}
 					emails = append(emails, email)
+					PrintInfo(
+						"Email "+fmt.Sprint(len(emails)),
+						email,
+						"from "+item.GetRepository().Owner.GetLogin()+"/"+item.GetRepository().
+							GetName(),
+					)
 				}
 			}
 		}
@@ -63,12 +75,5 @@ func commits(client *github.Client, ctx context.Context, username string) {
 	if err := collect("asc"); err != nil {
 		log.Error("Failed to fetch commits", "err", err)
 		return
-	}
-
-	for i, name := range names {
-		PrintInfo("Name "+fmt.Sprint(i+1), name)
-	}
-	for i, email := range emails {
-		PrintInfo("Email "+fmt.Sprint(i+1), email)
 	}
 }
