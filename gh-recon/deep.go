@@ -126,7 +126,7 @@ func (r Recon) Deep(username, excludeRepos string) (response []DeepResult) {
 			continue
 		}
 		r.PrintInfo(
-			"Downloading repository",
+			"Downloading",
 			repo.Owner+"/"+repo.Name,
 		)
 
@@ -169,8 +169,7 @@ func (r Recon) Deep(username, excludeRepos string) (response []DeepResult) {
 	} else {
 		r.PrintInfo("INFO", "Found emails:")
 		for _, email := range results {
-			r.PrintInfo("Email", email.Email)
-			r.PrintInfo("Found in", tmp_folder, email.FoundIn...)
+			r.PrintInfo("Email", email.Email, "found in:"+strings.Join(email.FoundIn, ", "))
 		}
 	}
 
