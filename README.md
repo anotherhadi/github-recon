@@ -17,6 +17,10 @@ Fetches and aggregates public OSINT data for a GitHub user, leveraging Go and th
 - Fetch SSH and GPG keys
 - Enumerate social accounts
 - Extract unique commit authors (name + email) in both chronological orders
+- Find close friends
+- Search using an email address
+- Export results to JSON
+- Deep scan option (clone repositories, regex search, analyze licenses, etc.)
 
 ## Disclaimer
 
@@ -25,7 +29,7 @@ This tool is intended for educational purposes only. Use responsibly and ensure 
 ## Prerequisites
 
 - Go 1.18+
-- GitHub Personal Access Token (recommended for higher rate limits)
+- GitHub Personal Access Token (recommended for higher rate limits): Create a GitHub API token with no permissions/no scope. This will be equivalent to public GitHub access, but it will allow access to use the GitHub Search API.
 
 ## Installation
 
@@ -67,18 +71,37 @@ gh-recon --username TARGET_USER [--token YOUR_TOKEN]
 
 ### Flags
 
-- `--username`: GitHub username to inspect (required)
 - `--token`: Personal Access Token (optional but recommended)
+
+```txt
+  -deep
+     Enable deep scan (clone repos, regex search, analyse licenses, etc.)
+  -email string
+     Search accounts by email address
+  -json string
+     Write results to specified JSON file
+  -only-commits
+     Display only commits with author info
+  -silent
+     Suppress all non-essential output
+  -token string
+     GitHub personal access token (e.g. ghp_...)
+  -username string
+     GitHub username to analyze
+```
 
 ## Example
 
 ```bash
 gh-recon --username anotherhadi --token ghp_ABC123...
+gh-recon --email myemail@gmail.com --token ghp_ABC123...
+gh-recon --username anotherhadi --json output.json --deep
 ```
 
 ## Todo
 
-Feel free to contribute! Here are some ideas:
+Feel free to contribute!
 
-- Fetch names in License files
-- Fetch emails in README files/comments
+**Todo:**
+
+- Find and parse licenses

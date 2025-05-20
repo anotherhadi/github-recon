@@ -4,31 +4,39 @@ import (
 	"fmt"
 )
 
-func (r Recon) Orgs(username string) {
+type OrgResult struct {
+	Login       string
+	ID          string
+	URL         string
+	Description string
+}
+
+func (r Recon) Orgs(username string) (response []OrgResult) {
 	orgs, resp, err := r.client.Organizations.List(r.ctx, username, nil)
 	if err != nil {
 		r.logger.Error("Failed to fetch organizations", "err", err)
 	} else if len(orgs) == 0 {
-		PrintTitle("🏢 Organizations")
-		r.logger.Info("No Organizations found\n")
+		r.PrintTitle("🏢 Organizations")
+		r.PrintInfo("INFO", "No Organizations found")
 	} else {
-		PrintTitle("🏢 Organizations")
+		r.PrintTitle("🏢 Organizations")
 		for i, org := range orgs {
-			PrintInfo("Orgs n°", fmt.Sprintf("%d", i))
-			PrintInfo("Login", org.GetLogin())
-			PrintInfo("ID", fmt.Sprintf("%d", org.GetID()))
-			PrintInfo("Node ID", org.GetNodeID())
-			PrintInfo("URL", org.GetURL())
-			PrintInfo("Repos URL", org.GetReposURL())
-			PrintInfo("Events URL", org.GetEventsURL())
-			PrintInfo("Hooks URL", org.GetHooksURL())
-			PrintInfo("Issues URL", org.GetIssuesURL())
-			PrintInfo("Members URL", org.GetMembersURL())
-			PrintInfo("Public Members URL", org.GetPublicMembersURL())
-			PrintInfo("Avatar URL", org.GetAvatarURL())
-			PrintInfo("Description", org.GetDescription())
-			fmt.Println()
+			o := OrgResult{
+				Login:       org.GetLogin(),
+				ID:          fmt.Sprintf("%d", org.GetID()),
+				URL:         org.GetURL(),
+				Description: org.GetDescription(),
+			}
+			r.PrintInfo("Organization n°", fmt.Sprintf("%d", i))
+			r.PrintInfo("Login", o.Login)
+			r.PrintInfo("ID", o.ID)
+			r.PrintInfo("URL", o.URL)
+			r.PrintInfo("Description", o.Description)
+			r.PrintNewline()
+			response = append(response, o)
 		}
 	}
+	r.PrintNewline()
 	WaitForRateLimit(resp)
+	return
 }

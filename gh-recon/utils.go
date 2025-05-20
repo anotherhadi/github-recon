@@ -1,9 +1,11 @@
 package ghrecon
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -22,9 +24,14 @@ var (
 	RedStyle   = lipgloss.NewStyle().Foreground(Red)
 )
 
-func Header() {
+func (r Recon) Header() {
+	if r.silent {
+		return
+	}
 	asciiArt := "        __                       \n  ___ _/ /  _______ _______  ___ \n / _ `/ _ \\/ __/ -_) __/ _ \\/ _ \\\n \\_, /_//_/_/  \\__/\\__/\\___/_//_/\n/___/                            "
-	fmt.Println(GreyStyle.Render(lipgloss.JoinVertical(lipgloss.Right, asciiArt, "@anotherhadi\n")))
+	fmt.Println(
+		GreyStyle.Render(lipgloss.JoinVertical(lipgloss.Right, asciiArt, "@anotherhadi\n")),
+	)
 }
 
 func ParseUsername(username string) error {
@@ -83,12 +90,25 @@ func FetchGitHubAPI(github *github.Client, token, path string) ([]byte, error) {
 	return bodyBytes, nil
 }
 
-func PrintTitle(title string) {
+func (r Recon) PrintNewline() {
+	if r.silent {
+		return
+	}
+	fmt.Println()
+}
+
+func (r Recon) PrintTitle(title string) {
+	if r.silent {
+		return
+	}
 	style := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#7287fd"))
 	fmt.Println(style.Render(title) + "\n")
 }
 
-func PrintInfo(key, value string, more ...string) {
+func (r Recon) PrintInfo(key, value string, more ...string) {
+	if r.silent {
+		return
+	}
 	if value == "" || value == "0001-01-01 00:00:00 +0000 UTC" {
 		return
 	}
@@ -110,4 +130,34 @@ func WaitForRateLimit(resp *github.Response) {
 		)
 		time.Sleep(time.Until(resp.Rate.Reset.Time) + time.Second)
 	}
+}
+
+func SkipResult(name, email string) bool {
+	if name == "github-actions[bot]" || name == "github-actions" {
+		return true
+	}
+	if email == "github-actions[bot]@users.noreply.github.com" ||
+		email == "github-actions@github.com" {
+		return true
+	}
+	return false
+}
+
+func (r Recon) WriteJson(data any) {
+	if r.jsonFile == "" {
+		return
+	}
+	file, err := os.Create(r.jsonFile)
+	if err != nil {
+		r.logger.Error("Failed to create JSON file", "err", err)
+		return
+	}
+	defer file.Close()
+	as_json, _ := json.MarshalIndent(data, "", "\t")
+	_, err = file.Write(as_json)
+	if err != nil {
+		r.logger.Error("Failed to write to JSON file", "err", err)
+		return
+	}
+	r.PrintInfo("INFO", "JSON file created successfully", "file", r.jsonFile)
 }

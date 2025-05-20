@@ -8,15 +8,25 @@ import (
 )
 
 type Recon struct {
-	client *github.Client
-	logger *log.Logger
-	ctx    context.Context
+	client   *github.Client
+	logger   *log.Logger
+	ctx      context.Context
+	silent   bool
+	jsonFile string
 }
 
-func NewRecon(client *github.Client, logger *log.Logger, ctx context.Context) *Recon {
+func NewRecon(
+	client *github.Client,
+	logger *log.Logger,
+	ctx context.Context,
+	silent bool,
+	jsonFile string,
+) *Recon {
 	return &Recon{
-		client: client,
-		logger: logger,
-		ctx:    ctx,
+		client:   client,
+		logger:   logger,
+		ctx:      ctx,
+		silent:   silent,
+		jsonFile: jsonFile,
 	}
 }

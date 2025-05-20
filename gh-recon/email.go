@@ -6,23 +6,24 @@ import (
 	"github.com/google/go-github/v72/github"
 )
 
-type CommitsResult struct {
+type EmailResult struct {
 	Name         string
 	Email        string
+	Username     string
 	Occurences   int
 	FirstFoundIn string
 }
 
-func (r Recon) Commits(username string) (response []CommitsResult) {
-	r.PrintTitle("🐙 Commits")
+func (r Recon) Email(email string) (response []EmailResult) {
+	r.PrintTitle("✉️ Email")
 
-	results := make(map[string]CommitsResult)
+	results := make(map[string]EmailResult)
 
 	collect := func(date string) error {
 		for page := 1; page <= 10; page++ {
 			result, resp, err := r.client.Search.Commits(
 				r.ctx,
-				fmt.Sprintf("author:%s author-date:%s", username, date),
+				fmt.Sprintf("author-email:%s author-date:%s", email, date),
 				&github.SearchOptions{
 					Sort:        "author-date",
 					Order:       "desc",
@@ -39,22 +40,27 @@ func (r Recon) Commits(username string) (response []CommitsResult) {
 			for _, item := range result.Commits {
 				name := item.Commit.GetAuthor().GetName()
 				email := item.Commit.GetAuthor().GetEmail()
-				if SkipResult(name, email) {
-					// continue
+				login := item.GetAuthor().GetLogin()
+				if login == "" {
+					login = "Unknown"
 				}
-				if _, seen := results[name+" - "+email]; !seen {
-					author := CommitsResult{
+				if SkipResult(name, email) {
+					continue
+				}
+				if _, seen := results[name+" - "+email+" - "+login]; !seen {
+					author := EmailResult{
 						Name:       name,
 						Email:      email,
+						Username:   login,
 						Occurences: 1,
 						FirstFoundIn: item.GetRepository().Owner.GetLogin() + "/" + item.GetRepository().
 							GetName(),
 					}
-					results[name+" - "+email] = author
+					results[name+" - "+email+" - "+login] = author
 				} else {
-					result := results[name+" - "+email]
+					result := results[name+" - "+email+" - "+login]
 					result.Occurences++
-					results[name+" - "+email] = result
+					results[name+" - "+email+" - "+login] = result
 				}
 			}
 		}
@@ -78,7 +84,7 @@ func (r Recon) Commits(username string) (response []CommitsResult) {
 	for _, result := range results {
 		r.PrintInfo(
 			"Author",
-			result.Name+" - "+result.Email,
+			result.Name+" - "+result.Email+" - @"+result.Username,
 			"first from "+result.FirstFoundIn+" (x"+fmt.Sprint(result.Occurences)+")",
 		)
 		response = append(response, result)
@@ -86,7 +92,5 @@ func (r Recon) Commits(username string) (response []CommitsResult) {
 	if len(results) == 0 {
 		r.PrintInfo("INFO", "No commits found")
 	}
-	r.PrintNewline()
-
 	return
 }

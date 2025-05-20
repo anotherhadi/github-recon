@@ -6,6 +6,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/charmbracelet/log v0.4.1
 	github.com/google/go-github/v72 v72.0.0
+	github.com/spf13/pflag v1.0.6
 )
 
 require (

@@ -4,7 +4,32 @@ import (
 	"fmt"
 )
 
-func (r Recon) User(username string) {
+type UserResult struct {
+	Username          string
+	ID                string
+	AvatarURL         string
+	GravatarID        string
+	Name              string
+	Company           string
+	Location          string
+	Email             string
+	Hireable          string
+	Bio               string
+	PublicRepos       string
+	PublicGists       string
+	Followers         string
+	Following         string
+	CreatedAt         string
+	UpdatedAt         string
+	SuspendedAt       string
+	TotalPrivateRepos string
+	PrivateGists      string
+	DiskUsage         string
+	Collaborators     string
+	Plan              string
+}
+
+func (r Recon) User(username string) (response UserResult) {
 	user, resp, err := r.client.Users.Get(r.ctx, username)
 	if resp.StatusCode == 404 {
 		r.logger.Fatal("User not found")
@@ -13,33 +38,55 @@ func (r Recon) User(username string) {
 		r.logger.Fatal("Failed to fetch user's information", "err", err)
 	}
 
-	PrintTitle("👤 User informations")
-	PrintInfo("Username", user.GetLogin())
-	PrintInfo("ID", fmt.Sprintf("%d", user.GetID()))
-	PrintInfo("Avatar URL", user.GetAvatarURL())
-	PrintInfo("Gravatar ID", user.GetGravatarID())
-	PrintInfo("Name", user.GetName())
-	PrintInfo("Company", user.GetCompany())
-	PrintInfo("Location", user.GetLocation())
-	PrintInfo("Email", user.GetEmail())
-	PrintInfo("Hireable", fmt.Sprintf("%t", user.GetHireable()))
-	PrintInfo("Bio", user.GetBio())
-	PrintInfo("Public Repos", fmt.Sprintf("%d", user.GetPublicRepos()))
-	PrintInfo("Public Gists", fmt.Sprintf("%d", user.GetPublicGists()))
-	PrintInfo("Followers", fmt.Sprintf("%d", user.GetFollowers()))
-	PrintInfo("Following", fmt.Sprintf("%d", user.GetFollowing()))
-	PrintInfo("Created At", user.GetCreatedAt().String())
-	PrintInfo("Updated At", user.GetUpdatedAt().String())
-	PrintInfo("Suspended At", user.GetSuspendedAt().String())
-	PrintInfo("Type", user.GetType())
-	PrintInfo("Site Admin", fmt.Sprintf("%t", user.GetSiteAdmin()))
-	PrintInfo("Total Private Repos", fmt.Sprintf("%d", user.GetTotalPrivateRepos()))
-	PrintInfo("Owned Private Repos", fmt.Sprintf("%d", user.GetOwnedPrivateRepos()))
-	PrintInfo("Private Gists", fmt.Sprintf("%d", user.GetPrivateGists()))
-	PrintInfo("Disk Usage", fmt.Sprintf("%d", user.GetDiskUsage()))
-	PrintInfo("Collaborators", fmt.Sprintf("%d", user.GetCollaborators()))
-	PrintInfo("Plan", user.GetPlan().GetName())
-	fmt.Println()
+	r.PrintTitle("👤 User informations")
+	u := UserResult{
+		Username:          user.GetLogin(),
+		ID:                fmt.Sprintf("%d", user.GetID()),
+		AvatarURL:         user.GetAvatarURL(),
+		GravatarID:        user.GetGravatarID(),
+		Name:              user.GetName(),
+		Company:           user.GetCompany(),
+		Location:          user.GetLocation(),
+		Email:             user.GetEmail(),
+		Hireable:          fmt.Sprintf("%t", user.GetHireable()),
+		Bio:               user.GetBio(),
+		PublicRepos:       fmt.Sprintf("%d", user.GetPublicRepos()),
+		PublicGists:       fmt.Sprintf("%d", user.GetPublicGists()),
+		Followers:         fmt.Sprintf("%d", user.GetFollowers()),
+		Following:         fmt.Sprintf("%d", user.GetFollowing()),
+		CreatedAt:         user.GetCreatedAt().String(),
+		UpdatedAt:         user.GetUpdatedAt().String(),
+		SuspendedAt:       user.GetSuspendedAt().String(),
+		TotalPrivateRepos: fmt.Sprintf("%d", user.GetTotalPrivateRepos()),
+		PrivateGists:      fmt.Sprintf("%d", user.GetPrivateGists()),
+		DiskUsage:         fmt.Sprintf("%d", user.GetDiskUsage()),
+		Collaborators:     fmt.Sprintf("%d", user.GetCollaborators()),
+		Plan:              user.GetPlan().GetName(),
+	}
+	r.PrintInfo("Username", u.Username)
+	r.PrintInfo("ID", u.ID)
+	r.PrintInfo("Avatar URL", u.AvatarURL)
+	r.PrintInfo("Gravatar ID", u.GravatarID)
+	r.PrintInfo("Name", u.Name)
+	r.PrintInfo("Company", u.Company)
+	r.PrintInfo("Location", u.Location)
+	r.PrintInfo("Email", u.Email)
+	r.PrintInfo("Hireable", u.Hireable)
+	r.PrintInfo("Bio", u.Bio)
+	r.PrintInfo("Public Repos", u.PublicRepos)
+	r.PrintInfo("Public Gists", u.PublicGists)
+	r.PrintInfo("Followers", u.Followers)
+	r.PrintInfo("Following", u.Following)
+	r.PrintInfo("Created At", u.CreatedAt)
+	r.PrintInfo("Updated At", u.UpdatedAt)
+	r.PrintInfo("Suspended At", u.SuspendedAt)
+	r.PrintInfo("Total Private Repos", u.TotalPrivateRepos)
+	r.PrintInfo("Private Gists", u.PrivateGists)
+	r.PrintInfo("Disk Usage", u.DiskUsage)
+	r.PrintInfo("Collaborators", u.Collaborators)
+	r.PrintInfo("Plan", u.Plan)
+	r.PrintNewline()
 
 	WaitForRateLimit(resp)
+	return u
 }
