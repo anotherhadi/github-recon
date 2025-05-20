@@ -47,6 +47,8 @@ go get github.com/anotherhadi/gh-recon
 
 ### With Nix/NixOS
 
+<details>
+<summary>Click to expand</summary>
 **From anywhere (using the repo URL):**
 
 ```bash
@@ -69,6 +71,8 @@ environment.systemPackages = with pkgs; [ # or home.packages
 ];
 ```
 
+</details>
+
 ## Usage
 
 ```bash
@@ -76,8 +80,6 @@ gh-recon --username TARGET_USER [--token YOUR_TOKEN]
 ```
 
 ### Flags
-
-- `--token`: Personal Access Token (optional but recommended)
 
 ```txt
   -deep
@@ -104,10 +106,6 @@ gh-recon --email myemail@gmail.com --token ghp_ABC123...
 gh-recon --username anotherhadi --json output.json --deep
 ```
 
-## Todo
+## Contributing
 
-Feel free to contribute!
-
-**Todo:**
-
-- Find and parse licenses
+Feel free to contribute! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
