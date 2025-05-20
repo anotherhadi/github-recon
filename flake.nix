@@ -13,7 +13,7 @@
         (system: f system (import nixpkgs { inherit system; }));
 
       pname = "gh-recon";
-      version = "0.2.0";
+      version = "0.2.1";
 
       ldflags = [ "-s" "-w" ];
 
@@ -24,7 +24,7 @@
 
           src = ./.;
 
-          vendorHash = "sha256-CPk8B8FKEoN8qff6WV/iBf0eVjTBMVfJQvlVcti6dfM=";
+          vendorHash = "sha256-S8IzmdiVvBtnQQl0AewGZ1yuitvrdnVQ/Jf2230g3Mg=";
 
           meta = with pkgs.lib; {
             description =
