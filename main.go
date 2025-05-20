@@ -89,7 +89,6 @@ func main() {
 
 	r.Header()
 
-
 	if fromEmail != "" {
 		emailsInfo := r.Email(fromEmail)
 		r.WriteJson(
@@ -120,15 +119,15 @@ func main() {
 	commitsInfo := r.Commits(username)
 
 	results := map[string]any{
-			"User":           userInfo,
-			"Orgs":           orgsInfo,
-			"SSHKeys":        sshKeysInfo,
-			"GPGKeys":        gpgKeysInfo,
-			"SSHSigningKeys": sshSigningKeysInfo,
-			"Socials":        socialsInfo,
-			"Commits":        commitsInfo,
-			"CloseFriends":   closeFriendsInfo,
-		}
+		"User":           userInfo,
+		"Orgs":           orgsInfo,
+		"SSHKeys":        sshKeysInfo,
+		"GPGKeys":        gpgKeysInfo,
+		"SSHSigningKeys": sshSigningKeysInfo,
+		"Socials":        socialsInfo,
+		"Commits":        commitsInfo,
+		"CloseFriends":   closeFriendsInfo,
+	}
 
 	if deep {
 		results["Deep"] = r.Deep(username, excludeRepos)
