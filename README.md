@@ -49,6 +49,7 @@ go get github.com/anotherhadi/gh-recon
 
 <details>
 <summary>Click to expand</summary>
+
 **From anywhere (using the repo URL):**
 
 ```bash
