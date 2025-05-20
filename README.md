@@ -22,7 +22,7 @@ Fetches and aggregates public OSINT data for a GitHub user, leveraging Go and th
 - List organizations and roles
 - Fetch SSH and GPG keys
 - Enumerate social accounts
-- Extract unique commit authors (name + email) in both chronological orders
+- Extract unique commit authors (name + email)
 - Find close friends
 - Find Github accounts using an email address
 - Export results to JSON
