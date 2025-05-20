@@ -18,7 +18,7 @@ Fetches and aggregates public OSINT data for a GitHub user, leveraging Go and th
 - Enumerate social accounts
 - Extract unique commit authors (name + email) in both chronological orders
 - Find close friends
-- Search using an email address
+- Find Github accounts using an email address
 - Export results to JSON
 - Deep scan option (clone repositories, regex search, analyze licenses, etc.)
 
