@@ -83,20 +83,16 @@ gh-recon --username TARGET_USER [--token YOUR_TOKEN]
 ### Flags
 
 ```txt
-  -deep
-     Enable deep scan (clone repos, regex search, analyse licenses, etc.)
-  -email string
-     Search accounts by email address
-  -json string
-     Write results to specified JSON file
-  -only-commits
-     Display only commits with author info
-  -silent
-     Suppress all non-essential output
-  -token string
-     GitHub personal access token (e.g. ghp_...)
-  -username string
-     GitHub username to analyze
+  -d, --deep                  Enable deep scan (clone repos, regex search, analyse licenses, etc.)
+  -e, --email string          Search accounts by email address
+      --exclude-repo string   Exclude repos from deep scan (comma-separated list)
+  -j, --json string           Write results to specified JSON file
+      --max-size int          Limit the size of repositories to scan (in MB) (Only for deep scan) (default 150)
+  -c, --only-commits          Display only commits with author info
+  -r, --refresh               Refresh the cache (deep scan only)
+  -s, --silent                Suppress all non-essential output
+  -t, --token string          GitHub personal access token (e.g. ghp_...)
+  -u, --username string       GitHub username to analyze
 ```
 
 ## Example
@@ -106,6 +102,21 @@ gh-recon --username anotherhadi --token ghp_ABC123...
 gh-recon --email myemail@gmail.com --token ghp_ABC123...
 gh-recon --username anotherhadi --json output.json --deep
 ```
+
+## Cover your tracks
+
+Understanding what information about you is publicly visible is the first step to managing your online presence. gh-recon can help you identify your own publicly available data on GitHub. Here’s how you can take steps to protect your privacy and security:
+
+- **Review your public profile**: Regularly check your GitHub profile and repositories to ensure that you are not unintentionally exposing sensitive information.
+- **Manage email exposure**: Use GitHub's settings to control which email addresses are visible on your profile and in commit history. You can also use a no-reply email address for commits. Delete/modify any sensitive information in your commit history.
+- **Be Mindful of Repository Content**: Avoid including sensitive information in your repositories, such as API keys, passwords, emails or personal data. Use `.gitignore` to exclude files that contain sensitive information.
+
+You can also use a tool like [TruffleHog](github.com/trufflesecurity/trufflehog) to scan your repositories specifically for exposed secrets and tokens.
+
+**Useful links:**
+
+- [Blocking command line pushes that expose your personal email address](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/blocking-command-line-pushes-that-expose-your-personal-email-address)
+- [No-reply email address](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/setting-your-commit-email-address)
 
 ## Contributing
 
