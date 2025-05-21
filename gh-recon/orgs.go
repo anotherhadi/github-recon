@@ -32,7 +32,9 @@ func (r Recon) Orgs(username string) (response []OrgResult) {
 			r.PrintInfo("ID", o.ID)
 			r.PrintInfo("URL", o.URL)
 			r.PrintInfo("Description", o.Description)
-			r.PrintNewline()
+			if i != len(orgs)-1 {
+				r.PrintNewline()
+			}
 			response = append(response, o)
 		}
 	}

@@ -48,7 +48,9 @@ func (r Recon) SshKeys(username string) (response []SSHKeyResult) {
 			r.PrintInfo("Verified", k.Verified)
 			r.PrintInfo("Last Used", k.LastUsed)
 			r.PrintInfo("Added By", k.AddedBy)
-			r.PrintNewline()
+			if i != len(sshKeys)-1 {
+				r.PrintNewline()
+			}
 		}
 	}
 	r.PrintNewline()
@@ -122,6 +124,9 @@ func (r Recon) GpgKeys(username string) (response []GPGKeyResult) {
 				r.PrintInfo("  Email n°", fmt.Sprintf("%d", j))
 				r.PrintInfo("  Email", email.Email)
 				r.PrintInfo("  Verified", email.Verified)
+				if j != len(k.Emails)-1 {
+					r.PrintNewline()
+				}
 			}
 			r.PrintInfo("Subkeys", fmt.Sprintf("%d", len(k.Subkeys)))
 			for j, subkey := range k.Subkeys {
@@ -131,9 +136,13 @@ func (r Recon) GpgKeys(username string) (response []GPGKeyResult) {
 				r.PrintInfo("  Subkey Created At", subkey.CreatedAt)
 				r.PrintInfo("  Subkey Primary Key ID", subkey.PrimaryKeyID)
 				r.PrintInfo("  Subkey Raw Key", subkey.RawKey)
+				if j != len(k.Subkeys)-1 {
+					r.PrintNewline()
+				}
 			}
-
-			r.PrintNewline()
+			if i != len(gpgKeys)-1 {
+				r.PrintNewline()
+			}
 		}
 	}
 	r.PrintNewline()
@@ -173,7 +182,9 @@ func (r Recon) SshSigningKeys(username string) (response []SSHSigningKeyResult) 
 			r.PrintInfo("Title", k.Title)
 			r.PrintInfo("Created At", k.CreatedAt)
 			r.PrintInfo("Key", k.Key)
-			r.PrintNewline()
+			if i != len(signingKeys)-1 {
+				r.PrintNewline()
+			}
 			response = append(response, k)
 		}
 	}

@@ -92,5 +92,7 @@ func (r Recon) Email(email string) (response []EmailResult) {
 	if len(results) == 0 {
 		r.PrintInfo("INFO", "No commits found")
 	}
+
+	r.PrintNewline()
 	return
 }
