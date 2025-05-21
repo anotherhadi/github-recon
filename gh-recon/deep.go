@@ -82,9 +82,10 @@ type DeepResult struct {
 	Repository string
 	Owner      string
 	Name       string
+	Size       int
 }
 
-func (r Recon) Deep(username, excludeRepos string) (response []DeepResult) {
+func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []DeepResult) {
 	excludeReposList := strings.Split(excludeRepos, ",")
 	repos, resp, err := r.client.Repositories.ListByUser(
 		r.ctx,
@@ -107,6 +108,7 @@ func (r Recon) Deep(username, excludeRepos string) (response []DeepResult) {
 				Repository: repo.GetCloneURL(),
 				Owner:      repo.GetOwner().GetLogin(),
 				Name:       repo.GetName(),
+				Size:       repo.GetSize(),
 			})
 		}
 	}
@@ -119,15 +121,43 @@ func (r Recon) Deep(username, excludeRepos string) (response []DeepResult) {
 	}
 
 	tmp_folder := "/tmp/ghrecon-" + username
+
+	if folderExists(tmp_folder) {
+		if refresh {
+			r.PrintInfo("INFO", "Deleting existing folder "+tmp_folder)
+			err := os.RemoveAll(tmp_folder)
+			if err != nil {
+				r.PrintInfo("ERROR", "Failed to delete existing folder "+tmp_folder)
+			}
+		}
+	}
+
 	for _, repo := range response {
 		if slices.Contains(excludeReposList, repo.Name) ||
 			slices.Contains(excludeReposList, repo.Owner+"/"+repo.Name) {
 			r.PrintInfo("INFO", "Skipping repository", repo.Owner+"/"+repo.Name)
 			continue
 		}
+
+		maxRepoSize := r.maxRepoSize * 1024
+
+		if repo.Size > maxRepoSize {
+			r.PrintInfo(
+				"INFO",
+				"Skipping repository "+repo.Owner+"/"+repo.Name+" due to size", fmt.Sprintf(
+					"%d",
+					repo.Size/1024,
+				)+"MB > "+fmt.Sprintf(
+					"%d",
+					maxRepoSize/1024,
+				)+"MB",
+			)
+			continue
+		}
 		r.PrintInfo(
 			"Downloading",
 			repo.Owner+"/"+repo.Name,
+			fmt.Sprintf("%d", repo.Size/1024)+"MB",
 		)
 
 		destination := tmp_folder + "/" + repo.Owner + "/" + repo.Name

@@ -19,15 +19,30 @@ func main() {
 	var silent bool
 	var jsonFile string
 	var excludeRepos string
+	var maxRepoSize int
+	var refresh bool
 	flag.StringVarP(&username, "username", "u", "", "GitHub username to analyze")
 	flag.StringVarP(&token, "token", "t", "", "GitHub personal access token (e.g. ghp_...)")
 	flag.StringVarP(&fromEmail, "email", "e", "", "Search accounts by email address")
+	flag.IntVar(
+		&maxRepoSize,
+		"max-size",
+		150,
+		"Limit the size of repositories to scan (in MB) (Only for deep scan)",
+	)
 	flag.BoolVarP(
 		&onlyCommitsLeak,
 		"only-commits",
 		"c",
 		false,
 		"Display only commits with author info",
+	)
+	flag.BoolVarP(
+		&refresh,
+		"refresh",
+		"r",
+		false,
+		"Refresh the cache (deep scan only)",
 	)
 	flag.BoolVarP(
 		&deep,
@@ -85,6 +100,7 @@ func main() {
 		ctx,
 		silent,
 		jsonFile,
+		maxRepoSize,
 	)
 
 	r.Header()
@@ -130,7 +146,7 @@ func main() {
 	}
 
 	if deep {
-		results["Deep"] = r.Deep(username, excludeRepos)
+		results["Deep"] = r.Deep(username, excludeRepos, refresh)
 	}
 
 	r.WriteJson(results)
