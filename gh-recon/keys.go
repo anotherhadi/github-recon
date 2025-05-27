@@ -17,9 +17,9 @@ type SSHKeyResult struct {
 }
 
 func (r Recon) SshKeys(username string) (response []SSHKeyResult) {
-	sshKeys, resp, err := r.client.Users.ListKeys(r.ctx, username, nil)
+	sshKeys, resp, err := r.Client.Users.ListKeys(r.Ctx, username, nil)
 	if err != nil {
-		r.logger.Error("Failed to fetch ssh keys", "err", err)
+		r.Logger.Error("Failed to fetch ssh keys", "err", err)
 	} else if len(sshKeys) == 0 {
 		r.PrintTitle("🔑 SSH Keys")
 		r.PrintInfo("INFO", "No SSH Keys found")
@@ -74,9 +74,9 @@ type GPGKeyResult struct {
 }
 
 func (r Recon) GpgKeys(username string) (response []GPGKeyResult) {
-	gpgKeys, resp, err := r.client.Users.ListGPGKeys(r.ctx, username, nil)
+	gpgKeys, resp, err := r.Client.Users.ListGPGKeys(r.Ctx, username, nil)
 	if err != nil {
-		r.logger.Error("Failed to fetch user's gpg keys", "err", err)
+		r.Logger.Error("Failed to fetch user's gpg keys", "err", err)
 	} else if len(gpgKeys) == 0 {
 		r.PrintTitle("🗝️ GPG Keys")
 		r.PrintInfo("INFO", "No GPG Keys found")
@@ -158,13 +158,13 @@ type SSHSigningKeyResult struct {
 }
 
 func (r Recon) SshSigningKeys(username string) (response []SSHSigningKeyResult) {
-	signingKeys, resp, err := r.client.Users.ListSSHSigningKeys(
-		r.ctx,
+	signingKeys, resp, err := r.Client.Users.ListSSHSigningKeys(
+		r.Ctx,
 		username,
 		nil,
 	)
 	if err != nil {
-		r.logger.Error("Failed to fetch user's ssh signing keys", "err", err)
+		r.Logger.Error("Failed to fetch user's ssh signing keys", "err", err)
 	} else if len(signingKeys) == 0 {
 		r.PrintTitle("📝 SSH Signing Keys")
 		r.PrintInfo("INFO", "No SSH Signing Keys found")

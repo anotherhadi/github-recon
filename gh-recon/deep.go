@@ -87,15 +87,15 @@ type DeepResult struct {
 
 func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []DeepResult) {
 	excludeReposList := strings.Split(excludeRepos, ",")
-	repos, resp, err := r.client.Repositories.ListByUser(
-		r.ctx,
+	repos, resp, err := r.Client.Repositories.ListByUser(
+		r.Ctx,
 		username,
 		&github.RepositoryListByUserOptions{
 			Type: "all",
 		},
 	)
 	if err != nil {
-		r.logger.Error("Failed to fetch repositories", "err", err)
+		r.Logger.Error("Failed to fetch repositories", "err", err)
 		return
 	}
 
@@ -139,7 +139,7 @@ func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []Dee
 			continue
 		}
 
-		maxRepoSize := r.maxRepoSize * 1024
+		maxRepoSize := r.MaxRepoSize * 1024
 
 		if repo.Size > maxRepoSize {
 			r.PrintInfo(
@@ -174,7 +174,7 @@ func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []Dee
 		)
 		err := cmd.Run()
 		if err != nil {
-			r.logger.Error(
+			r.Logger.Error(
 				"ERROR",
 				"Failed to clone repository",
 				"err",
@@ -190,7 +190,7 @@ func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []Dee
 	r.PrintInfo("INFO", "Now searching for emails in cloned repositories, this may take a while...")
 	results, err := findEmailsAndOccurrencesInDir(tmp_folder)
 	if err != nil {
-		r.logger.Error("Failed to find emails in directory", "err", err)
+		r.Logger.Error("Failed to find emails in directory", "err", err)
 		return
 	}
 

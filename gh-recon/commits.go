@@ -20,8 +20,8 @@ func (r Recon) Commits(username string) (response []CommitsResult) {
 
 	collect := func(date string) error {
 		for page := 1; page <= 10; page++ {
-			result, resp, err := r.client.Search.Commits(
-				r.ctx,
+			result, resp, err := r.Client.Search.Commits(
+				r.Ctx,
 				fmt.Sprintf("author:%s author-date:%s", username, date),
 				&github.SearchOptions{
 					Sort:        "author-date",
@@ -71,7 +71,7 @@ func (r Recon) Commits(username string) (response []CommitsResult) {
 		">2026-01-01",
 	} {
 		if err := collect(date); err != nil {
-			r.logger.Error("Failed to fetch commits", "err", err, "date", date)
+			r.Logger.Error("Failed to fetch commits", "err", err, "date", date)
 		}
 	}
 

@@ -30,12 +30,12 @@ type UserResult struct {
 }
 
 func (r Recon) User(username string) (response UserResult) {
-	user, resp, err := r.client.Users.Get(r.ctx, username)
+	user, resp, err := r.Client.Users.Get(r.Ctx, username)
 	if resp.StatusCode == 404 {
-		r.logger.Fatal("User not found")
+		r.Logger.Fatal("User not found")
 	}
 	if err != nil {
-		r.logger.Fatal("Failed to fetch user's information", "err", err)
+		r.Logger.Fatal("Failed to fetch user's information", "err", err)
 	}
 
 	r.PrintTitle("👤 User informations")

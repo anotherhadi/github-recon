@@ -12,9 +12,9 @@ type OrgResult struct {
 }
 
 func (r Recon) Orgs(username string) (response []OrgResult) {
-	orgs, resp, err := r.client.Organizations.List(r.ctx, username, nil)
+	orgs, resp, err := r.Client.Organizations.List(r.Ctx, username, nil)
 	if err != nil {
-		r.logger.Error("Failed to fetch organizations", "err", err)
+		r.Logger.Error("Failed to fetch organizations", "err", err)
 	} else if len(orgs) == 0 {
 		r.PrintTitle("🏢 Organizations")
 		r.PrintInfo("INFO", "No Organizations found")

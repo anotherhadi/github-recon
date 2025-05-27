@@ -25,7 +25,7 @@ var (
 )
 
 func (r Recon) Header() {
-	if r.silent {
+	if r.Silent {
 		return
 	}
 	asciiArt := "        __                       \n  ___ _/ /  _______ _______  ___ \n / _ `/ _ \\/ __/ -_) __/ _ \\/ _ \\\n \\_, /_//_/_/  \\__/\\__/\\___/_//_/\n/___/                            "
@@ -91,14 +91,14 @@ func FetchGitHubAPI(github *github.Client, token, path string) ([]byte, error) {
 }
 
 func (r Recon) PrintNewline() {
-	if r.silent {
+	if r.Silent {
 		return
 	}
 	fmt.Println()
 }
 
 func (r Recon) PrintTitle(title string) {
-	if r.silent {
+	if r.Silent {
 		return
 	}
 	style := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#7287fd"))
@@ -106,7 +106,7 @@ func (r Recon) PrintTitle(title string) {
 }
 
 func (r Recon) PrintInfo(key, value string, more ...string) {
-	if r.silent {
+	if r.Silent {
 		return
 	}
 	if value == "" || value == "0001-01-01 00:00:00 +0000 UTC" {
@@ -144,20 +144,20 @@ func SkipResult(name, email string) bool {
 }
 
 func (r Recon) WriteJson(data any) {
-	if r.jsonFile == "" {
+	if r.JsonFile == "" {
 		return
 	}
-	file, err := os.Create(r.jsonFile)
+	file, err := os.Create(r.JsonFile)
 	if err != nil {
-		r.logger.Error("Failed to create JSON file", "err", err)
+		r.Logger.Error("Failed to create JSON file", "err", err)
 		return
 	}
 	defer file.Close()
 	as_json, _ := json.MarshalIndent(data, "", "\t")
 	_, err = file.Write(as_json)
 	if err != nil {
-		r.logger.Error("Failed to write to JSON file", "err", err)
+		r.Logger.Error("Failed to write to JSON file", "err", err)
 		return
 	}
-	r.PrintInfo("INFO", "JSON file created successfully", "file", r.jsonFile)
+	r.PrintInfo("INFO", "JSON file created successfully", "file", r.JsonFile)
 }

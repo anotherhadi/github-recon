@@ -24,9 +24,9 @@ const (
 func (r Recon) CloseFriends(username string) (response []CloseFriendsResult) {
 	r.PrintTitle("🧑‍🤝‍🧑 Close Friends")
 
-	following, resp, err := r.client.Users.ListFollowing(r.ctx, username, nil)
+	following, resp, err := r.Client.Users.ListFollowing(r.Ctx, username, nil)
 	if err != nil {
-		r.logger.Error("Failed to fetch user's following list", "user", username, "err", err)
+		r.Logger.Error("Failed to fetch user's following list", "user", username, "err", err)
 		r.PrintNewline()
 		return
 	}
@@ -55,15 +55,15 @@ func (r Recon) CloseFriends(username string) (response []CloseFriendsResult) {
 	for _, userBeingFollowedByTarget := range following {
 		loginName := userBeingFollowedByTarget.GetLogin()
 		if loginName == "" {
-			r.logger.Warn("User in following list has an empty login", "target_user", username)
+			r.Logger.Warn("User in following list has an empty login", "target_user", username)
 			continue
 		}
 
 		currentScore := 0
 
-		userDetails, userResp, userErr := r.client.Users.Get(r.ctx, loginName)
+		userDetails, userResp, userErr := r.Client.Users.Get(r.Ctx, loginName)
 		if userErr != nil {
-			r.logger.Warn(
+			r.Logger.Warn(
 				"Failed to fetch details for followed user",
 				"followed_user",
 				loginName,
@@ -119,9 +119,9 @@ func (r Recon) CloseFriends(username string) (response []CloseFriendsResult) {
 
 // checkIfUserFollows checks if sourceUserLogin follows targetUserLogin.
 func (r Recon) checkIfUserFollows(sourceUserLogin, targetUserLogin string) (bool, error) {
-	isFollowing, resp, err := r.client.Users.IsFollowing(r.ctx, sourceUserLogin, targetUserLogin)
+	isFollowing, resp, err := r.Client.Users.IsFollowing(r.Ctx, sourceUserLogin, targetUserLogin)
 	if err != nil {
-		r.logger.Warn("Error checking if user follows target",
+		r.Logger.Warn("Error checking if user follows target",
 			"source_user_checking", sourceUserLogin,
 			"target_user_to_check", targetUserLogin,
 			"err", err)

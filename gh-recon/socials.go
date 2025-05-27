@@ -11,16 +11,16 @@ type SocialResult struct {
 }
 
 func (r Recon) Socials(username string) (response []SocialResult) {
-	resp, err := FetchGitHubAPI(r.client, "", "/users/"+username+"/social_accounts")
+	resp, err := FetchGitHubAPI(r.Client, "", "/users/"+username+"/social_accounts")
 	if err != nil {
-		r.logger.Error("Failed to fetch socials", "err", err)
+		r.Logger.Error("Failed to fetch socials", "err", err)
 		return
 	}
 
 	var socialAccounts []SocialResult
 	err = json.Unmarshal(resp, &socialAccounts)
 	if err != nil {
-		r.logger.Error("Failed to unmarshal socials", "err", err)
+		r.Logger.Error("Failed to unmarshal socials", "err", err)
 		return
 	}
 

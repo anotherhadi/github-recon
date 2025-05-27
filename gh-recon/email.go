@@ -21,8 +21,8 @@ func (r Recon) Email(email string) (response []EmailResult) {
 
 	collect := func(date string) error {
 		for page := 1; page <= 10; page++ {
-			result, resp, err := r.client.Search.Commits(
-				r.ctx,
+			result, resp, err := r.Client.Search.Commits(
+				r.Ctx,
 				fmt.Sprintf("author-email:%s author-date:%s", email, date),
 				&github.SearchOptions{
 					Sort:        "author-date",
@@ -77,7 +77,7 @@ func (r Recon) Email(email string) (response []EmailResult) {
 		">2026-01-01",
 	} {
 		if err := collect(date); err != nil {
-			r.logger.Error("Failed to fetch commits", "err", err, "date", date)
+			r.Logger.Error("Failed to fetch commits", "err", err, "date", date)
 		}
 	}
 

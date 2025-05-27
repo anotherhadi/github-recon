@@ -8,12 +8,12 @@ import (
 )
 
 type Recon struct {
-	client      *github.Client
-	logger      *log.Logger
-	ctx         context.Context
-	silent      bool
-	jsonFile    string
-	maxRepoSize int
+	Client      *github.Client
+	Logger      *log.Logger
+	Ctx         context.Context
+	Silent      bool
+	JsonFile    string
+	MaxRepoSize int
 }
 
 func NewRecon(
@@ -25,11 +25,11 @@ func NewRecon(
 	maxRepoSize int,
 ) *Recon {
 	return &Recon{
-		client:      client,
-		logger:      logger,
-		ctx:         ctx,
-		silent:      silent,
-		jsonFile:    jsonFile,
-		maxRepoSize: maxRepoSize,
+		Client:      client,
+		Logger:      logger,
+		Ctx:         ctx,
+		Silent:      silent,
+		JsonFile:    jsonFile,
+		MaxRepoSize: maxRepoSize,
 	}
 }
