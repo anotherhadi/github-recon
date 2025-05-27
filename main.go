@@ -3,12 +3,22 @@ package main
 import (
 	"context"
 	"os"
+	"strings"
 
 	ghrecon "github.com/anotherhadi/gh-recon/gh-recon"
 	"github.com/charmbracelet/log"
 	"github.com/google/go-github/v72/github"
 	flag "github.com/spf13/pflag"
 )
+
+func wordSepNormalizeFunc(f *flag.FlagSet, name string) flag.NormalizedName {
+	from := []string{".", "_"}
+	to := "-"
+	for _, sep := range from {
+		name = strings.ReplaceAll(name, sep, to)
+	}
+	return flag.NormalizedName(name)
+}
 
 func main() {
 	var username string
@@ -59,6 +69,7 @@ func main() {
 		"",
 		"Exclude repos from deep scan (comma-separated list)",
 	)
+	flag.CommandLine.SetNormalizeFunc(wordSepNormalizeFunc)
 	flag.Parse()
 
 	styles := log.DefaultStyles()
