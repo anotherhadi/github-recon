@@ -40,7 +40,7 @@ func (r Recon) Commits(username string) (response []CommitsResult) {
 				name := item.Commit.GetAuthor().GetName()
 				email := item.Commit.GetAuthor().GetEmail()
 				if SkipResult(name, email) {
-					// continue
+					continue
 				}
 				if _, seen := results[name+" - "+email]; !seen {
 					author := CommitsResult{
