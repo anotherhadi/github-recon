@@ -42,7 +42,7 @@ This tool is intended for educational purposes only. Use responsibly and ensure 
 ### With Go
 
 ```bash
-go get github.com/anotherhadi/gh-recon
+go install github.com/anotherhadi/gh-recon@latest
 ```
 
 ### With Nix/NixOS
@@ -83,23 +83,23 @@ gh-recon --username TARGET_USER [--token YOUR_TOKEN]
 ### Flags
 
 ```txt
-  -d, --deep                  Enable deep scan (clone repos, regex search, analyse licenses, etc.)
-  -e, --email string          Search accounts by email address
-      --exclude-repo string   Exclude repos from deep scan (comma-separated list)
-  -j, --json string           Write results to specified JSON file
-      --max-size int          Limit the size of repositories to scan (in MB) (Only for deep scan) (default 150)
-  -c, --only-commits          Display only commits with author info
-  -r, --refresh               Refresh the cache (deep scan only)
-  -s, --silent                Suppress all non-essential output
-  -t, --token string          GitHub personal access token (e.g. ghp_...)
   -u, --username string       GitHub username to analyze
+  -t, --token string          GitHub personal access token (e.g. ghp_...)
+  -e, --email string          Search accounts by email address
+  -d, --deep                  Enable deep scan (clone repos, regex search, analyse licenses, etc.)
+      --max-size int          Limit the size of repositories to scan (in MB) (only for deep scan) (default 150)
+      --exclude-repo string   Exclude repos from deep scan (comma-separated list, only for deep scan)
+  -r, --refresh               Refresh the cache (only for deep scan)
+  -c, --only-commits          Display only commits with author info
+  -s, --silent                Suppress all non-essential output
+  -j, --json string           Write results to specified JSON file
 ```
 
 ## Example
 
 ```bash
 gh-recon --username anotherhadi --token ghp_ABC123...
-gh-recon --email myemail@gmail.com --token ghp_ABC123...
+gh-recon --email myemail@gmail.com
 gh-recon --username anotherhadi --json output.json --deep
 ```
 
