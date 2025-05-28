@@ -118,6 +118,22 @@ func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []Dee
 				continue
 			}
 
+			maxRepoSize := r.MaxRepoSize * 1024
+
+			if repo.GetSize() > maxRepoSize {
+				r.PrintInfo(
+					"INFO",
+					"Skipping repository "+repo.GetOwner().GetLogin()+"/"+repo.GetName()+" due to size", fmt.Sprintf(
+						"%d",
+						repo.GetSize()/1024,
+					)+"MB > "+fmt.Sprintf(
+						"%d",
+						maxRepoSize/1024,
+					)+"MB",
+				)
+				continue
+			}
+
 			response = append(response, DeepResult{
 				Repository: repo.GetCloneURL(),
 				Owner:      repo.GetOwner().GetLogin(),
@@ -147,22 +163,6 @@ func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []Dee
 	}
 
 	for _, repo := range response {
-		maxRepoSize := r.MaxRepoSize * 1024
-
-		if repo.Size > maxRepoSize {
-			r.PrintInfo(
-				"INFO",
-				"Skipping repository "+repo.Owner+"/"+repo.Name+" due to size", fmt.Sprintf(
-					"%d",
-					repo.Size/1024,
-				)+"MB > "+fmt.Sprintf(
-					"%d",
-					maxRepoSize/1024,
-				)+"MB",
-			)
-			continue
-		}
-
 		destination := tmp_folder + "/" + repo.Owner + "/" + repo.Name
 		if folderExists(destination) {
 			r.PrintInfo("INFO", "Directory already downloaded, skipping "+repo.Owner+"/"+repo.Name)
