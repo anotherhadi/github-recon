@@ -31,14 +31,29 @@ func main() {
 	var excludeRepos string
 	var maxRepoSize int
 	var refresh bool
+
+	// FLAGS
 	flag.StringVarP(&username, "username", "u", "", "GitHub username to analyze")
 	flag.StringVarP(&token, "token", "t", "", "GitHub personal access token (e.g. ghp_...)")
 	flag.StringVarP(&fromEmail, "email", "e", "", "Search accounts by email address")
+	flag.BoolVarP(
+		&deep,
+		"deep",
+		"d",
+		false,
+		"Enable deep scan (clone repos, regex search, analyse licenses, etc.)",
+	)
 	flag.IntVar(
 		&maxRepoSize,
 		"max-size",
 		150,
 		"Limit the size of repositories to scan (in MB) (Only for deep scan)",
+	)
+	flag.StringVar(
+		&excludeRepos,
+		"exclude-repo",
+		"",
+		"Exclude repos from deep scan (comma-separated list)",
 	)
 	flag.BoolVarP(
 		&onlyCommitsLeak,
@@ -54,22 +69,13 @@ func main() {
 		false,
 		"Refresh the cache (deep scan only)",
 	)
-	flag.BoolVarP(
-		&deep,
-		"deep",
-		"d",
-		false,
-		"Enable deep scan (clone repos, regex search, analyse licenses, etc.)",
-	)
 	flag.BoolVarP(&silent, "silent", "s", false, "Suppress all non-essential output")
 	flag.StringVarP(&jsonFile, "json", "j", "", "Write results to specified JSON file")
-	flag.StringVar(
-		&excludeRepos,
-		"exclude-repo",
-		"",
-		"Exclude repos from deep scan (comma-separated list)",
-	)
+
+	// FLAGS SETTINGS
 	flag.CommandLine.SetNormalizeFunc(wordSepNormalizeFunc)
+	flag.CommandLine.SortFlags = false
+
 	flag.Parse()
 
 	styles := log.DefaultStyles()
