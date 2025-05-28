@@ -20,6 +20,12 @@ func folderExists(path string) bool {
 	return false
 }
 
+type AuthorOccurrence struct {
+	Name    string
+	Email   string
+	FoundIn []string
+}
+
 type EmailOccurrence struct {
 	Email   string
 	FoundIn []string
@@ -36,6 +42,9 @@ func findEmailsAndOccurrencesInDir(rootPath string) ([]EmailOccurrence, error) {
 			return err
 		}
 		if !d.IsDir() {
+			if strings.Contains(path, ".git/logs/") {
+				return nil
+			}
 			content, err := os.ReadFile(path)
 			if err != nil {
 				fmt.Printf("Can't read %s: %v\n", path, err)
@@ -104,6 +113,11 @@ func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []Dee
 		r.PrintInfo("INFO", "No repositories found")
 	} else {
 		for _, repo := range repos {
+			if slices.Contains(excludeReposList, repo.GetName()) ||
+				slices.Contains(excludeReposList, repo.GetOwner().GetLogin()+"/"+repo.GetName()) {
+				continue
+			}
+
 			response = append(response, DeepResult{
 				Repository: repo.GetCloneURL(),
 				Owner:      repo.GetOwner().GetLogin(),
@@ -133,12 +147,6 @@ func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []Dee
 	}
 
 	for _, repo := range response {
-		if slices.Contains(excludeReposList, repo.Name) ||
-			slices.Contains(excludeReposList, repo.Owner+"/"+repo.Name) {
-			r.PrintInfo("INFO", "Skipping repository", repo.Owner+"/"+repo.Name)
-			continue
-		}
-
 		maxRepoSize := r.MaxRepoSize * 1024
 
 		if repo.Size > maxRepoSize {
@@ -154,17 +162,18 @@ func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []Dee
 			)
 			continue
 		}
+
+		destination := tmp_folder + "/" + repo.Owner + "/" + repo.Name
+		if folderExists(destination) {
+			r.PrintInfo("INFO", "Directory already downloaded, skipping "+repo.Owner+"/"+repo.Name)
+			continue
+		}
+
 		r.PrintInfo(
 			"Downloading",
 			repo.Owner+"/"+repo.Name,
 			fmt.Sprintf("%d", repo.Size/1024)+"MB",
 		)
-
-		destination := tmp_folder + "/" + repo.Owner + "/" + repo.Name
-		if folderExists(destination) {
-			r.PrintInfo("INFO", "Directory already exists, skipping")
-			continue
-		}
 
 		cmd := exec.Command(
 			"git",
@@ -186,6 +195,84 @@ func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []Dee
 		}
 	}
 	r.PrintInfo("INFO", "Cloned all repositories to "+tmp_folder)
+
+	authorOccurrences := []AuthorOccurrence{}
+	mapAuthorToIndex := make(map[string]int)
+	for _, repo := range response {
+		destination := tmp_folder + "/" + repo.Owner + "/" + repo.Name
+		if !folderExists(filepath.Join(destination, ".git")) {
+			r.Logger.Error(
+				"No .git directory found, cannot run git log.",
+				"repo",
+				repo.Owner+"/"+repo.Name,
+				"path",
+				destination,
+			)
+		} else {
+			gitLogCmd := exec.Command("git", "log", "--all", "--format=%aN <%aE>")
+			gitLogCmd.Dir = destination
+			logOutput, logErr := gitLogCmd.Output()
+
+			if logErr != nil {
+				if exitErr, ok := logErr.(*exec.ExitError); ok {
+					r.Logger.Error("Failed to execute git log (ExitError)", "repo", repo.Owner+"/"+repo.Name, "stderr", string(exitErr.Stderr), "err", logErr)
+				} else {
+					r.Logger.Error("Failed to execute git log", "repo", repo.Owner+"/"+repo.Name, "err", logErr)
+				}
+			} else {
+				lines := strings.Split(string(logOutput), "\n")
+				repoIdentifier := repo.Owner + "/" + repo.Name
+
+				for _, line := range lines {
+					trimmedLine := strings.TrimSpace(line)
+					if trimmedLine == "" {
+						continue
+					}
+
+					if index, exists := mapAuthorToIndex[trimmedLine]; exists {
+						isRepoListed := false
+						for _, foundRepo := range authorOccurrences[index].FoundIn {
+							if foundRepo == repoIdentifier {
+								isRepoListed = true
+								break
+							}
+						}
+						if !isRepoListed {
+							authorOccurrences[index].FoundIn = append(authorOccurrences[index].FoundIn, repoIdentifier)
+							slices.Sort(authorOccurrences[index].FoundIn)
+						}
+					} else {
+						parts := strings.SplitN(trimmedLine, " <", 2)
+						var authorName, authorEmail string
+						if len(parts) == 2 {
+							authorName = parts[0]
+							authorEmail = strings.TrimSuffix(parts[1], ">")
+						} else if len(parts) == 1 {
+							authorName = "-"
+							authorEmail = strings.TrimPrefix(strings.TrimSuffix(parts[0], ">"), "<")
+						} else {
+							r.Logger.Error("Malformed author line from git log", "line", trimmedLine, "repo", repoIdentifier)
+							continue
+						}
+
+						authorOccurrences = append(authorOccurrences, AuthorOccurrence{
+							Name:    authorName,
+							Email:   authorEmail,
+							FoundIn: []string{repoIdentifier},
+						})
+						mapAuthorToIndex[trimmedLine] = len(authorOccurrences) - 1
+					}
+				}
+			}
+		}
+	}
+	for _, author := range authorOccurrences {
+		r.PrintInfo(
+			"Author",
+			author.Name+" <"+author.Email+">",
+			"found in:"+strings.Join(author.FoundIn, ", "),
+		)
+	}
 
 	r.PrintInfo("INFO", "Now searching for emails in cloned repositories, this may take a while...")
 	results, err := findEmailsAndOccurrencesInDir(tmp_folder)
