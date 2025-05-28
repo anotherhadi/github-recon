@@ -66,7 +66,9 @@ func FetchGitHubAPI(github *github.Client, token, path string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error executing request for %s: %w", url, err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		bodyBytes, _ := io.ReadAll(resp.Body)
@@ -152,7 +154,9 @@ func (r Recon) WriteJson(data any) {
 		r.Logger.Error("Failed to create JSON file", "err", err)
 		return
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 	as_json, _ := json.MarshalIndent(data, "", "\t")
 	_, err = file.Write(as_json)
 	if err != nil {
