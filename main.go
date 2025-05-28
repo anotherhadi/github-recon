@@ -11,15 +11,6 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
-func wordSepNormalizeFunc(f *flag.FlagSet, name string) flag.NormalizedName {
-	from := []string{".", "_"}
-	to := "-"
-	for _, sep := range from {
-		name = strings.ReplaceAll(name, sep, to)
-	}
-	return flag.NormalizedName(name)
-}
-
 func main() {
 	var username string
 	var token string
@@ -78,47 +69,36 @@ func main() {
 
 	flag.Parse()
 
-	styles := log.DefaultStyles()
-	styles.Levels[log.InfoLevel] = styles.Levels[log.InfoLevel].Foreground(ghrecon.Grey)
-	logger := log.NewWithOptions(os.Stderr, log.Options{
-		ReportCaller:    false,
-		ReportTimestamp: false,
-	})
-	logger.SetStyles(styles)
-
-	if username == "" && fromEmail == "" {
-		logger.Error(
-			"Please provide a username with the --username (-u) flag or an email with the --email (-e) flag",
-		)
-		os.Exit(1)
-	} else if username != "" {
-		username = strings.TrimPrefix(username, "@")
-		if err := ghrecon.ParseUsername(username); err != nil {
-			logger.Error("Invalid username", "err", err)
-			os.Exit(1)
-		}
-	}
-
-	client := github.NewClient(nil)
-	if token == "" {
-		if !silent {
-			logger.Info(
-				"It's recommended to set a Github token for better rate limits. You can set it using the --token (-t) flag.",
-			)
-		}
-	} else {
-		client = client.WithAuthToken(token)
-	}
-
-	ctx := context.Background()
-
 	r := &ghrecon.Recon{
-		Client:      client,
-		Logger:      logger,
-		Ctx:         ctx,
+		Client: github.NewClient(nil),
+		Logger: log.NewWithOptions(os.Stderr, log.Options{
+			ReportCaller:    false,
+			ReportTimestamp: false,
+		}),
+		Ctx:         context.Background(),
 		Silent:      silent,
 		JsonFile:    jsonFile,
 		MaxRepoSize: maxRepoSize,
+	}
+
+	if username == "" && fromEmail == "" {
+		r.Logger.Fatal(
+			"Please provide a username with the --username (-u) flag or an email with the --email (-e) flag",
+		)
+	} else if username != "" {
+		username = strings.TrimPrefix(username, "@")
+		if err := ghrecon.ParseUsername(username); err != nil {
+			r.Logger.Fatal("Invalid username", "err", err)
+		}
+	}
+
+	if token == "" {
+		r.PrintInfo(
+			"INFO",
+			"It's recommended to set a Github token for better rate limits. You can set it using the --token (-t) flag.",
+		)
+	} else {
+		r.Client = r.Client.WithAuthToken(token)
 	}
 
 	r.Header()
