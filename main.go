@@ -112,14 +112,14 @@ func main() {
 
 	ctx := context.Background()
 
-	r := ghrecon.NewRecon(
-		client,
-		logger,
-		ctx,
-		silent,
-		jsonFile,
-		maxRepoSize,
-	)
+	r := &ghrecon.Recon{
+		Client:      client,
+		Logger:      logger,
+		Ctx:         ctx,
+		Silent:      silent,
+		JsonFile:    jsonFile,
+		MaxRepoSize: maxRepoSize,
+	}
 
 	r.Header()
 
