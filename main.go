@@ -92,6 +92,7 @@ func main() {
 		)
 		os.Exit(1)
 	} else if username != "" {
+		username = strings.TrimPrefix(username, "@")
 		if err := ghrecon.ParseUsername(username); err != nil {
 			logger.Error("Invalid username", "err", err)
 			os.Exit(1)
