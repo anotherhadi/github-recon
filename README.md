@@ -4,7 +4,7 @@
 
 <br>
 
-# GH-Recon
+# GH-Recon 🔍
 
 <p>
     <a href="https://github.com/anotherhadi/gh-recon/releases"><img src="https://img.shields.io/github/release/anotherhadi/gh-recon.svg" alt="Latest Release"></a>
@@ -12,11 +12,12 @@
     <a href="https://goreportcard.com/report/github.com/anotherhadi/gh-recon"><img src="https://goreportcard.com/badge/github.com/anotherhadi/gh-recon" alt="GoReportCard"></a>
 </p>
 
-## Project Overview
+## 🧾 Project Overview
 
-Fetches and aggregates public OSINT data for a GitHub user, leveraging Go and the GitHub API.
+Retrieves and aggregates public OSINT data about a GitHub user using Go and the GitHub API.
+Finds hidden emails in commit history, previous usernames, friends, other GitHub accounts, and more.
 
-## Features
+## 🚀 Features
 
 - Retrieve basic user profile information (username, ID, avatar, bio, creation dates)
 - List organizations and roles
@@ -28,16 +29,16 @@ Fetches and aggregates public OSINT data for a GitHub user, leveraging Go and th
 - Export results to JSON
 - Deep scan option (clone repositories, regex search, analyze licenses, etc.)
 
-## Disclaimer
+## ⚠️ Disclaimer
 
 This tool is intended for educational purposes only. Use responsibly and ensure you have permission to access the data you are querying.
 
-## Prerequisites
+## 📋 Prerequisites
 
 - Go 1.18+
 - GitHub Personal Access Token (recommended for higher rate limits): Create a GitHub API token with no permissions/no scope. This will be equivalent to public GitHub access, but it will allow access to use the GitHub Search API.
 
-## Installation
+## 📦 Installation
 
 ### With Go
 
@@ -74,7 +75,7 @@ environment.systemPackages = with pkgs; [ # or home.packages
 
 </details>
 
-## Usage
+## 🧪 Usage
 
 ```bash
 gh-recon --username TARGET_USER [--token YOUR_TOKEN]
@@ -95,7 +96,7 @@ gh-recon --username TARGET_USER [--token YOUR_TOKEN]
   -j, --json string           Write results to specified JSON file
 ```
 
-## Example
+## 💡 Examples
 
 ```bash
 gh-recon --username anotherhadi --token ghp_ABC123...
@@ -103,7 +104,7 @@ gh-recon --email myemail@gmail.com
 gh-recon --username anotherhadi --json output.json --deep
 ```
 
-## Cover your tracks
+## 🕵️‍♂️ Cover your tracks
 
 Understanding what information about you is publicly visible is the first step to managing your online presence. gh-recon can help you identify your own publicly available data on GitHub. Here’s how you can take steps to protect your privacy and security:
 
@@ -118,6 +119,6 @@ You can also use a tool like [TruffleHog](github.com/trufflesecurity/trufflehog)
 - [Blocking command line pushes that expose your personal email address](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/blocking-command-line-pushes-that-expose-your-personal-email-address)
 - [No-reply email address](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-email-preferences/setting-your-commit-email-address)
 
-## Contributing
+## 🤝 Contributing
 
 Feel free to contribute! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
