@@ -13,13 +13,6 @@ import (
 	"github.com/google/go-github/v72/github"
 )
 
-func folderExists(path string) bool {
-	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
-		return true
-	}
-	return false
-}
-
 type AuthorOccurrence struct {
 	Name    string
 	Email   string
@@ -29,6 +22,19 @@ type AuthorOccurrence struct {
 type EmailOccurrence struct {
 	Email   string
 	FoundIn []string
+}
+
+type DeepResult struct {
+	Repositories []Repositorie
+	Authors      []AuthorOccurrence
+	Emails       []EmailOccurrence
+}
+
+type Repositorie struct {
+	Repository string
+	Owner      string
+	Name       string
+	Size       int
 }
 
 func findEmailsAndOccurrencesInDir(rootPath string) ([]EmailOccurrence, error) {
@@ -87,14 +93,8 @@ func findEmailsAndOccurrencesInDir(rootPath string) ([]EmailOccurrence, error) {
 	return results, nil
 }
 
-type DeepResult struct {
-	Repository string
-	Owner      string
-	Name       string
-	Size       int
-}
-
-func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []DeepResult) {
+func (r Recon) Deep(username, excludeRepos string, refresh bool) (response DeepResult) {
+	repositories := []Repositorie{}
 	excludeReposList := strings.Split(excludeRepos, ",")
 	repos, resp, err := r.Client.Repositories.ListByUser(
 		r.Ctx,
@@ -134,7 +134,7 @@ func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []Dee
 				continue
 			}
 
-			response = append(response, DeepResult{
+			repositories = append(repositories, Repositorie{
 				Repository: repo.GetCloneURL(),
 				Owner:      repo.GetOwner().GetLogin(),
 				Name:       repo.GetName(),
@@ -162,7 +162,7 @@ func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []Dee
 		}
 	}
 
-	for _, repo := range response {
+	for _, repo := range repositories {
 		destination := tmp_folder + "/" + repo.Owner + "/" + repo.Name
 		if folderExists(destination) {
 			r.PrintInfo("INFO", "Directory already downloaded, skipping "+repo.Owner+"/"+repo.Name)
@@ -198,7 +198,7 @@ func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []Dee
 
 	authorOccurrences := []AuthorOccurrence{}
 	mapAuthorToIndex := make(map[string]int)
-	for _, repo := range response {
+	for _, repo := range repositories {
 		destination := tmp_folder + "/" + repo.Owner + "/" + repo.Name
 		if !folderExists(filepath.Join(destination, ".git")) {
 			r.Logger.Error(
@@ -275,20 +275,24 @@ func (r Recon) Deep(username, excludeRepos string, refresh bool) (response []Dee
 	}
 
 	r.PrintInfo("INFO", "Now searching for emails in cloned repositories, this may take a while...")
-	results, err := findEmailsAndOccurrencesInDir(tmp_folder)
+	emails, err := findEmailsAndOccurrencesInDir(tmp_folder)
 	if err != nil {
 		r.Logger.Error("Failed to find emails in directory", "err", err)
 		return
 	}
 
-	if len(results) == 0 {
+	if len(emails) == 0 {
 		r.PrintInfo("INFO", "No emails found")
 	} else {
 		r.PrintInfo("INFO", "Found emails:")
-		for _, email := range results {
+		for _, email := range emails {
 			r.PrintInfo("Email", email.Email, "found in:"+strings.Join(email.FoundIn, ", "))
 		}
 	}
+
+	response.Repositories = repositories
+	response.Authors = authorOccurrences
+	response.Emails = emails
 
 	r.PrintNewline()
 	return
