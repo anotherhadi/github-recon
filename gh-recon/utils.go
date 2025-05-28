@@ -166,7 +166,6 @@ func (r Recon) WriteJson(data any) {
 	r.PrintInfo("INFO", "JSON file created successfully", "file", r.JsonFile)
 }
 
-
 func folderExists(path string) bool {
 	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
 		return true
