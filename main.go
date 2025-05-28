@@ -38,13 +38,20 @@ func main() {
 		&maxRepoSize,
 		"max-size",
 		150,
-		"Limit the size of repositories to scan (in MB) (Only for deep scan)",
+		"Limit the size of repositories to scan (in MB) (only for deep scan)",
 	)
 	flag.StringVar(
 		&excludeRepos,
 		"exclude-repo",
 		"",
-		"Exclude repos from deep scan (comma-separated list)",
+		"Exclude repos from deep scan (comma-separated list, only for deep scan)",
+	)
+	flag.BoolVarP(
+		&refresh,
+		"refresh",
+		"r",
+		false,
+		"Refresh the cache (only for deep scan)",
 	)
 	flag.BoolVarP(
 		&onlyCommitsLeak,
@@ -52,13 +59,6 @@ func main() {
 		"c",
 		false,
 		"Display only commits with author info",
-	)
-	flag.BoolVarP(
-		&refresh,
-		"refresh",
-		"r",
-		false,
-		"Refresh the cache (deep scan only)",
 	)
 	flag.BoolVarP(&silent, "silent", "s", false, "Suppress all non-essential output")
 	flag.StringVarP(&jsonFile, "json", "j", "", "Write results to specified JSON file")
@@ -68,6 +68,8 @@ func main() {
 	flag.CommandLine.SortFlags = false
 
 	flag.Parse()
+
+	// INITIALIZE RECON OBJECT
 
 	r := &ghrecon.Recon{
 		Client: github.NewClient(nil),
@@ -80,6 +82,8 @@ func main() {
 		JsonFile:    jsonFile,
 		MaxRepoSize: maxRepoSize,
 	}
+
+	// CHECK FLAGS
 
 	if username == "" && fromEmail == "" {
 		r.Logger.Fatal(
@@ -100,6 +104,8 @@ func main() {
 	} else {
 		r.Client = r.Client.WithAuthToken(token)
 	}
+
+	// START
 
 	r.Header()
 
