@@ -1,0 +1,304 @@
+package recon
+
+import (
+	"io/fs"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"regexp"
+	"slices"
+	"strings"
+
+	github_recon_settings "github.com/anotherhadi/github-recon/settings"
+	"github.com/anotherhadi/github-recon/utils"
+	"github.com/google/go-github/v72/github"
+)
+
+type Authors []AuthorOccurrence
+
+type AuthorOccurrence struct {
+	Name        string
+	Levenshtein int
+	Email       string
+	FoundIn     []string
+}
+
+type Emails []EmailOccurrence
+
+type EmailOccurrence struct {
+	Email       string
+	Levenshtein int
+	FoundIn     []string
+}
+
+type DeepScanResult struct {
+	Authors []AuthorOccurrence
+	Emails  []EmailOccurrence
+}
+
+type Repositorie struct {
+	Repository string
+	Owner      string
+	Name       string
+	Size       int
+}
+
+func findEmailsAndOccurrencesInDir(rootPath string, username string) (Emails, error) {
+	emailLocations := make(map[string]map[string]bool)
+	emailRegex := regexp.MustCompile(`[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}`)
+	normalizedRootPath := filepath.Clean(rootPath)
+
+	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() {
+			if strings.Contains(path, ".git/logs/") {
+				return nil
+			}
+			content, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+
+			currentFileEmails := emailRegex.FindAllString(string(content), -1)
+			if len(currentFileEmails) > 0 {
+				relativePath, errRel := filepath.Rel(normalizedRootPath, path)
+				if errRel != nil {
+					relativePath = path
+				}
+
+				for _, email := range currentFileEmails {
+					if len(email) > 12 {
+						if _, ok := emailLocations[email]; !ok {
+							emailLocations[email] = make(map[string]bool)
+						}
+						emailLocations[email][relativePath] = true
+					}
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var results []EmailOccurrence
+	for email, pathSet := range emailLocations {
+		var paths []string
+		for path := range pathSet {
+			paths = append(paths, path)
+		}
+		results = append(results, EmailOccurrence{
+			Email: email, FoundIn: paths,
+			Levenshtein: utils.LevenshteinDistance(username, strings.SplitN(email, "@", 2)[0]),
+		})
+	}
+
+	return results, nil
+}
+
+func DeepScan(s github_recon_settings.Settings) (response DeepScanResult) {
+	repositories := []Repositorie{}
+	repos, resp, err := s.Client.Repositories.ListByUser(
+		s.Ctx,
+		s.Target,
+		&github.RepositoryListByUserOptions{
+			Type: "all",
+		},
+	)
+
+	if err != nil {
+		s.Logger.Error("Failed to fetch repositories", "err", err)
+		return
+	}
+
+	// r.PrintTitle("📦 Repositories")
+
+	for _, repo := range repos {
+		if slices.Contains(s.ExcludedRepos, repo.GetName()) ||
+			slices.Contains(s.ExcludedRepos, repo.GetOwner().GetLogin()+"/"+repo.GetName()) {
+			continue
+		}
+
+		maxRepoSize := s.MaxRepoSize * 1024
+
+		if repo.GetSize() > maxRepoSize {
+			s.Logger.Info("Skipping repository due to size", "repo", repo.GetOwner().GetLogin()+"/"+repo.GetName(), "size_MB", repo.GetSize()/1024, "max_size_MB", maxRepoSize/1024)
+			continue
+		}
+
+		repositories = append(repositories, Repositorie{
+			Repository: repo.GetCloneURL(),
+			Owner:      repo.GetOwner().GetLogin(),
+			Name:       repo.GetName(),
+			Size:       repo.GetSize(),
+		})
+	}
+	utils.WaitForRateLimit(s, resp)
+
+	cmd := exec.Command("git", "--version")
+	if err := cmd.Run(); err != nil {
+		s.Logger.Error("Git is not installed", "err", err)
+		return
+	}
+
+	tmp_folder := "/tmp/ghrecon-" + s.Target
+
+	if utils.DoesFolderExists(tmp_folder) {
+		if s.Refresh {
+			s.Logger.Info("Deleting existing folder", "path", tmp_folder)
+			err := os.RemoveAll(tmp_folder)
+			if err != nil {
+				s.Logger.Error("Failed to delete existing folder", "path", tmp_folder, "err", err)
+				return
+			}
+		}
+	}
+
+	for _, repo := range repositories {
+		destination := tmp_folder + "/" + repo.Owner + "/" + repo.Name
+		if utils.DoesFolderExists(destination) {
+			s.Logger.Info("Directory already downloaded, skipping", "repo", repo.Owner+"/"+repo.Name, "path", destination)
+			continue
+		}
+
+		s.Logger.Info("Cloning repository", "repo", repo.Owner+"/"+repo.Name, "path", destination, "size_MB", repo.Size/1024)
+
+		cmd := exec.Command(
+			"git",
+			"clone",
+			repo.Repository,
+			destination,
+		)
+		err := cmd.Run()
+		if err != nil {
+			s.Logger.Error(
+				"ERROR",
+				"Failed to clone repository",
+				"err",
+				err,
+				"repo",
+				repo.Repository,
+			)
+			continue
+		}
+	}
+	s.Logger.Info("Cloned all repositories", "path", tmp_folder)
+
+	authorOccurrences := []AuthorOccurrence{}
+	mapAuthorToIndex := make(map[string]int)
+	for _, repo := range repositories {
+		destination := tmp_folder + "/" + repo.Owner + "/" + repo.Name
+		if !utils.DoesFolderExists(filepath.Join(destination, ".git")) {
+			s.Logger.Error(
+				"No .git directory found, cannot run git log.",
+				"repo",
+				repo.Owner+"/"+repo.Name,
+				"path",
+				destination,
+			)
+		} else {
+			gitLogCmd := exec.Command("git", "log", "--all", "--format=%aN <%aE>")
+			gitLogCmd.Dir = destination
+			logOutput, logErr := gitLogCmd.Output()
+
+			if logErr != nil {
+				if exitErr, ok := logErr.(*exec.ExitError); ok {
+					s.Logger.Error("Failed to execute git log (ExitError)", "repo", repo.Owner+"/"+repo.Name, "stderr", string(exitErr.Stderr), "err", logErr)
+				} else {
+					s.Logger.Error("Failed to execute git log", "repo", repo.Owner+"/"+repo.Name, "err", logErr)
+				}
+			} else {
+				lines := strings.Split(string(logOutput), "\n")
+				repoIdentifier := repo.Owner + "/" + repo.Name
+
+				for _, line := range lines {
+					trimmedLine := strings.TrimSpace(line)
+					if trimmedLine == "" {
+						continue
+					}
+
+					if index, exists := mapAuthorToIndex[trimmedLine]; exists {
+						isRepoListed := false
+						for _, foundRepo := range authorOccurrences[index].FoundIn {
+							if foundRepo == repoIdentifier {
+								isRepoListed = true
+								break
+							}
+						}
+						if !isRepoListed {
+							authorOccurrences[index].FoundIn = append(authorOccurrences[index].FoundIn, repoIdentifier)
+							slices.Sort(authorOccurrences[index].FoundIn)
+						}
+					} else {
+						parts := strings.SplitN(trimmedLine, " <", 2)
+						var authorName, authorEmail string
+						if len(parts) == 2 {
+							authorName = parts[0]
+							authorEmail = strings.TrimSuffix(parts[1], ">")
+						} else if len(parts) == 1 {
+							authorName = "-"
+							authorEmail = strings.TrimPrefix(strings.TrimSuffix(parts[0], ">"), "<")
+						} else {
+							s.Logger.Error("Malformed author line from git log", "line", trimmedLine, "repo", repoIdentifier)
+							continue
+						}
+
+						authorOccurrences = append(authorOccurrences, AuthorOccurrence{
+							Name:        authorName,
+							Email:       authorEmail,
+							FoundIn:     []string{repoIdentifier},
+							Levenshtein: utils.LevenshteinDistance(s.Target, authorName),
+						})
+						mapAuthorToIndex[trimmedLine] = len(authorOccurrences) - 1
+					}
+				}
+			}
+		}
+	}
+	slices.SortFunc(authorOccurrences, func(a, b AuthorOccurrence) int {
+		if a.Levenshtein != b.Levenshtein {
+			return a.Levenshtein - b.Levenshtein
+		}
+		return 1
+	})
+
+	authors := []AuthorOccurrence{}
+	for _, author := range authorOccurrences {
+		if author.Levenshtein > s.MaxDistance {
+			continue
+		}
+		if utils.SkipResult(author.Name, author.Email) {
+			continue
+		}
+		authors = append(authors, author)
+	}
+
+	s.Logger.Info("Searching for emails in cloned repositories", "path", tmp_folder)
+	emailsFound, err := findEmailsAndOccurrencesInDir(tmp_folder, s.Target)
+	if err != nil {
+		s.Logger.Error("Failed to find emails in directory", "err", err)
+		return
+	}
+	slices.SortFunc(emailsFound, func(a, b EmailOccurrence) int {
+		if a.Levenshtein != b.Levenshtein {
+			return a.Levenshtein - b.Levenshtein
+		}
+		return 1
+	})
+
+	emails := []EmailOccurrence{}
+	for _, email := range emailsFound {
+		if email.Levenshtein > s.MaxDistance {
+			continue
+		}
+		emails = append(emails, email)
+	}
+
+	response.Authors = authors
+	response.Emails = emails
+
+	return
+}
