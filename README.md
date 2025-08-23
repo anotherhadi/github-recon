@@ -20,6 +20,7 @@
   - [With Nix/NixOS](#with-nixnixos)
 - [🧪 Usage](#-usage)
   - [Flags](#flags)
+  - [Token](#token)
 - [💡 Examples](#-examples)
 - [🕵️‍♂️ Cover your tracks](#-cover-your-tracks)
 - [🤝 Contributing](#-contributing)
@@ -38,20 +39,21 @@ other GitHub accounts, and more.
 **From usernames:**
 
 - Retrieve basic user profile information (username, ID, avatar, bio, creation
-  dates)
-- Display the avatar in the terminal
+  date)
+- Display avatars directly in the terminal
 - List organizations and roles
 - Fetch SSH and GPG keys
 - Enumerate social accounts
 - Extract unique commit authors (name + email)
 - Find close friends
-- Deep scan option (clone repositories, regex search, analyze licenses, etc.)
-- Levenshtein distance for matching usernames and emails
+- Deep scan option (clone repositories, run regex searches, analyze licenses,
+  etc.)
+- Use Levenshtein distance for matching usernames and emails
 
 **From emails:**
 
-- Search for a specific email through all Github commits
-- Spoof an email to found an user account
+- Search for a specific email across all GitHub commits
+- Spoof an email to discover the associated user account
 
 ## ⚠️ Disclaimer
 
@@ -115,6 +117,35 @@ github-recon [--flags value] target_username_or_email
 -h, --hide-avatar            Hide the avatar in the output
 -j, --json string            Write results to specified JSON file
 ```
+
+### Token
+
+For the best experience, provide a **GitHub Personal Access Token**. Without a
+token, you will quickly hit the **rate limit** and have to wait.
+
+- For **basic usage**, you can create a token **without any permissions**.
+- For the **email spoofing feature**, you need to add the **`repo`** and
+  **`delete_repo`** permissions.
+
+You can set the token in multiple ways:
+
+- **Command-line flag**:
+
+  ```bash
+  github-recon -t "ghp_xxx..."
+  ```
+
+- **Environment variable**:
+
+  ```bash
+  export GITHUB_RECON_TOKEN=ghp_xxx...
+  ```
+
+- **Config file**: Create the file `~/.config/github-recon/env` and add:
+
+  ```env
+  GITHUB_RECON_TOKEN=ghp_xxx...
+  ```
 
 ## 💡 Examples
 
