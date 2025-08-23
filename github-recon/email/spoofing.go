@@ -27,7 +27,6 @@ func RandomString(n int) string {
 }
 
 func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
-	// 1) Create repo (auto-init pour avoir une branche par défaut)
 	name := "gh-recon-spoofing-" + RandomString(8)
 	private := true
 	autoInit := true
@@ -48,10 +47,11 @@ func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
 	}
 	refName := "heads/" + branch
 
-	// 2) Commit vide avec auteur spoofé (tree identique au parent)
+	authorName := "GITHUB-RECON-SPOOFING"
+	authorEmail := s.Target
 	author := &github.CommitAuthor{
-		Name:  github.String("Spoofed Name"),
-		Email: github.String(s.Target),
+		Name:  &authorName,
+		Email: &authorEmail,
 	}
 
 	ref, resp, err := s.Client.Git.GetRef(s.Ctx, repo.Owner.GetLogin(), name, refName)
@@ -70,9 +70,10 @@ func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
 	}
 	utils.WaitForRateLimit(s, resp)
 
+	commitMessage := "Spoofed empty commit"
 	commit := &github.Commit{
 		Author:  author,
-		Message: github.String("Spoofed empty commit"),
+		Message: &commitMessage,
 		Tree:    &github.Tree{SHA: parentCommit.Tree.SHA},
 		Parents: []*github.Commit{parentCommit},
 	}
@@ -94,7 +95,6 @@ func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
 	}
 	utils.WaitForRateLimit(s, resp)
 
-	// 3) Get user
 	commits, _, err := s.Client.Repositories.ListCommits(s.Ctx, repo.Owner.GetLogin(), name, nil)
 	if err != nil {
 		s.Logger.Error("Error while listing commits", "err", err)
@@ -111,7 +111,6 @@ func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
 		response.AvatarURL = last.GetAuthor().GetAvatarURL()
 	}
 
-	// 4) Cleanup
 	_, err = s.Client.Repositories.Delete(s.Ctx, repo.Owner.GetLogin(), name)
 	if err != nil {
 		s.Logger.Error("Error while deleting repo", "err", err)
