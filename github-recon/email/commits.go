@@ -2,6 +2,7 @@ package recon
 
 import (
 	"fmt"
+	"strings"
 
 	github_recon_settings "github.com/anotherhadi/github-recon/settings"
 	"github.com/anotherhadi/github-recon/utils"
@@ -49,7 +50,7 @@ func Commits(s github_recon_settings.Settings) (response CommitsResult) {
 				if utils.SkipResult(name, email) {
 					continue
 				}
-				if _, seen := results[name+" - "+email+" - "+login]; !seen {
+				if _, seen := results[strings.ToLower(name)+" - "+strings.ToLower(email)+" - "+strings.ToLower(login)]; !seen {
 					author := CommitResult{
 						Name:        name,
 						Email:       email,
@@ -58,11 +59,11 @@ func Commits(s github_recon_settings.Settings) (response CommitsResult) {
 						FirstFoundIn: item.GetRepository().Owner.GetLogin() + "/" + item.GetRepository().
 							GetName(),
 					}
-					results[name+" - "+email+" - "+login] = author
+					results[strings.ToLower(name)+" - "+strings.ToLower(email)+" - "+strings.ToLower(login)] = author
 				} else {
-					result := results[name+" - "+email+" - "+login]
+					result := results[strings.ToLower(name)+" - "+strings.ToLower(email)+" - "+strings.ToLower(login)]
 					result.Occurrences++
-					results[name+" - "+email+" - "+login] = result
+					results[strings.ToLower(name)+" - "+strings.ToLower(email)+" - "+strings.ToLower(login)] = result
 				}
 			}
 		}

@@ -2,6 +2,7 @@ package recon
 
 import (
 	"fmt"
+	"strings"
 
 	github_recon_settings "github.com/anotherhadi/github-recon/settings"
 	"github.com/anotherhadi/github-recon/utils"
@@ -54,25 +55,27 @@ func Commits(s github_recon_settings.Settings) (response CommitsResult) {
 				}
 
 				for i := range names {
-					if utils.SkipResult(names[i], emails[i]) {
+					name := names[i]
+					email := emails[i]
+					if utils.SkipResult(name, email) {
 						continue
 					}
-					if names[i] == "" || emails[i] == "" {
+					if name == "" || email == "" {
 						continue
 					}
-					if _, seen := results[names[i]+" - "+emails[i]]; !seen {
+					if _, seen := results[strings.ToLower(name)+" - "+strings.ToLower(email)]; !seen {
 						author := CommitResult{
-							Name:        names[i],
-							Email:       emails[i],
+							Name:        name,
+							Email:       email,
 							Occurrences: 1,
 							FirstFoundIn: item.GetRepository().Owner.GetLogin() + "/" + item.GetRepository().
 								GetName(),
 						}
-						results[names[i]+" - "+emails[i]] = author
+						results[strings.ToLower(name)+" - "+strings.ToLower(email)] = author
 					} else if i == 0 {
-						result := results[names[i]+" - "+emails[i]]
+						result := results[strings.ToLower(name)+" - "+strings.ToLower(email)]
 						result.Occurrences++
-						results[names[i]+" - "+emails[i]] = result
+						results[strings.ToLower(name)+" - "+strings.ToLower(email)] = result
 					}
 				}
 			}
