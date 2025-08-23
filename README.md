@@ -148,6 +148,11 @@ You can set the token in multiple ways:
   GITHUB_RECON_TOKEN=ghp_xxx...
   ```
 
+> [!WARNING]
+> For safety, it is recommended to create the Personal Access Token on a
+> **separate GitHub account** rather than your main account. This way, if
+> anything goes wrong, your primary account remains safe.
+
 ## 💡 Examples
 
 ```bash
