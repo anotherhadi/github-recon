@@ -10,7 +10,7 @@ type EmailResult struct {
 	Target     string
 	TargetType github_recon_settings.TargetType
 
-	Commit recon.EmailsResult
+	Commit recon.CommitsResult
 }
 
 func email(settings github_recon_settings.Settings, datetime string) {

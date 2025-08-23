@@ -8,9 +8,9 @@ import (
 	"github.com/google/go-github/v72/github"
 )
 
-type EmailsResult []EmailResult
+type CommitsResult []CommitResult
 
-type EmailResult struct {
+type CommitResult struct {
 	Name         string
 	Email        string
 	Username     string
@@ -18,8 +18,8 @@ type EmailResult struct {
 	FirstFoundIn string
 }
 
-func Email(s github_recon_settings.Settings) (response EmailsResult) {
-	results := make(map[string]EmailResult)
+func Email(s github_recon_settings.Settings) (response CommitsResult) {
+	results := make(map[string]CommitResult)
 
 	collect := func(date string) error {
 		for page := 1; page <= 10; page++ {
@@ -50,7 +50,7 @@ func Email(s github_recon_settings.Settings) (response EmailsResult) {
 					continue
 				}
 				if _, seen := results[name+" - "+email+" - "+login]; !seen {
-					author := EmailResult{
+					author := CommitResult{
 						Name:        name,
 						Email:       email,
 						Username:    login,
