@@ -82,8 +82,8 @@ func CloseFriends(s github_recon_settings.Settings) (response CloseFriendsResult
 
 		if currentScore > 0 {
 			response = append(response, CloseFriendResult{
-				Login: loginName,
-				Score: currentScore,
+				Username: loginName,
+				Score:    currentScore,
 			})
 		}
 	}
