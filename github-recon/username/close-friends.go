@@ -11,8 +11,8 @@ import (
 type CloseFriendsResult []CloseFriendResult
 
 type CloseFriendResult struct {
-	Login string
-	Score int
+	Username string
+	Score    int
 }
 
 const (
