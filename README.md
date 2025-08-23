@@ -21,6 +21,7 @@
 - [🧪 Usage](#-usage)
   - [Flags](#flags)
   - [Token](#token)
+  - [How does the email spoofing work?](#how-does-the-email-spoofing-work)
 - [💡 Examples](#-examples)
 - [🕵️‍♂️ Cover your tracks](#-cover-your-tracks)
 - [🤝 Contributing](#-contributing)
@@ -152,6 +153,18 @@ You can set the token in multiple ways:
 > For safety, it is recommended to create the Personal Access Token on a
 > **separate GitHub account** rather than your main account. This way, if
 > anything goes wrong, your primary account remains safe.
+
+### How does the email spoofing work?
+
+Here’s the process:
+
+1. Create a new repository.
+2. Make a commit using the **target's email** as the author.
+3. Push the commit to GitHub.
+4. Observe which GitHub account gets associated with that commit.
+
+All of these steps are handled **automatically by the tool**, so you just need
+to provide the target email.
 
 ## 💡 Examples
 
