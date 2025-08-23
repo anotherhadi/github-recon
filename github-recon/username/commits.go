@@ -39,24 +39,41 @@ func Commits(s github_recon_settings.Settings) (response CommitsResult) {
 				break
 			}
 			for _, item := range result.Commits {
-				name := item.Commit.GetAuthor().GetName()
-				email := item.Commit.GetAuthor().GetEmail()
-				if utils.SkipResult(name, email) {
-					continue
+				emails := []string{
+					item.Commit.GetAuthor().GetEmail(),
+					item.Commit.GetCommitter().GetEmail(),
+					item.GetAuthor().GetEmail(),
+					item.GetCommitter().GetEmail(),
 				}
-				if _, seen := results[name+" - "+email]; !seen {
-					author := CommitResult{
-						Name:        name,
-						Email:       email,
-						Occurrences: 1,
-						FirstFoundIn: item.GetRepository().Owner.GetLogin() + "/" + item.GetRepository().
-							GetName(),
+
+				names := []string{
+					item.Commit.GetAuthor().GetName(),
+					item.Commit.GetCommitter().GetName(),
+					item.GetAuthor().GetName(),
+					item.GetCommitter().GetName(),
+				}
+
+				for i := range names {
+					if utils.SkipResult(names[i], emails[i]) {
+						continue
 					}
-					results[name+" - "+email] = author
-				} else {
-					result := results[name+" - "+email]
-					result.Occurrences++
-					results[name+" - "+email] = result
+					if names[i] == "" || emails[i] == "" {
+						continue
+					}
+					if _, seen := results[names[i]+" - "+emails[i]]; !seen {
+						author := CommitResult{
+							Name:        names[i],
+							Email:       emails[i],
+							Occurrences: 1,
+							FirstFoundIn: item.GetRepository().Owner.GetLogin() + "/" + item.GetRepository().
+								GetName(),
+						}
+						results[names[i]+" - "+emails[i]] = author
+					} else if i == 0 {
+						result := results[names[i]+" - "+emails[i]]
+						result.Occurrences++
+						results[names[i]+" - "+emails[i]] = result
+					}
 				}
 			}
 		}
