@@ -14,7 +14,7 @@
 
 - [🧾 Project Overview](#-project-overview)
 - [🚀 Features](#-features)
-- [⚠️ Disclaimer](#-disclaimer)
+- [⚠️ Disclaimer](#%EF%B8%8F-disclaimer)
 - [📦 Installation](#-installation)
   - [With Go](#with-go)
   - [With Nix/NixOS](#with-nixnixos)
@@ -23,7 +23,7 @@
   - [Token](#token)
   - [How does the email spoofing work?](#how-does-the-email-spoofing-work)
 - [💡 Examples](#-examples)
-- [🕵️‍♂️ Cover your tracks](#-cover-your-tracks)
+- [🕵️‍♂️ Cover your tracks](#%EF%B8%8F%EF%B8%8F-cover-your-tracks)
 - [🤝 Contributing](#-contributing)
 - [🙏 Credits](#-credits)
 
