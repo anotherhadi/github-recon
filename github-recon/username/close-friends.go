@@ -30,7 +30,7 @@ const (
 // 3. The candidate follows the target back (+1 point).
 // 4. The candidate shares at least one organization with the target (+1 point).
 func CloseFriends(s github_recon_settings.Settings) (results CloseFriendsResult) {
-	targetFollowing, resp, err := s.Client.Users.ListFollowing(s.Ctx, s.Target, nil)
+	targetFollowing, resp, err := s.Client.Users.ListFollowing(s.Ctx, s.Target, &github.ListOptions{PerPage: 100})
 	if err != nil {
 		s.Logger.Error("Failed to fetch target's following list", "err", err)
 		return
@@ -43,7 +43,7 @@ func CloseFriends(s github_recon_settings.Settings) (results CloseFriendsResult)
 		targetOrgs = []*github.Organization{}
 	}
 
-	if len(targetFollowing) >= maxTargetFollowing {
+	if len(targetFollowing) > maxTargetFollowing {
 		s.Logger.Info("Skipping close friends check",
 			"reason",
 			fmt.Sprintf("Target follows %d or more users (limit: %d)", len(targetFollowing), maxTargetFollowing),
