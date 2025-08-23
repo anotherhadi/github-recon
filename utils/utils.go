@@ -113,7 +113,7 @@ func SkipResult(name, email string) bool {
 	if name == "github-actions[bot]" || name == "dependabot[bot]" || name == "github-actions" {
 		return true
 	}
-	if email == "github-actions[bot]@users.noreply.github.com" ||
+	if email == "github-actions[bot]@users.noreply.github.com" || email == "noreply@github.com" ||
 		email == "github-actions@github.com" || email == "41898282+github-actions[bot]@users.noreply.github.com" || email == "49699333+dependabot[bot]@users.noreply.github.com" {
 		return true
 	}
