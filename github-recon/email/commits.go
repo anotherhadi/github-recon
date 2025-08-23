@@ -18,7 +18,7 @@ type CommitResult struct {
 	FirstFoundIn string
 }
 
-func Email(s github_recon_settings.Settings) (response CommitsResult) {
+func Commits(s github_recon_settings.Settings) (response CommitsResult) {
 	results := make(map[string]CommitResult)
 
 	collect := func(date string) error {
