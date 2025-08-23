@@ -9,10 +9,11 @@ import (
 )
 
 type SpoofingResult struct {
-	Username string
-	Name     string
-	Email    string
-	Url      string
+	Username  string
+	Name      string
+	Email     string
+	Url       string
+	AvatarURL string
 }
 
 func RandomString(n int) string {
@@ -41,7 +42,6 @@ func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
 	}
 	utils.WaitForRateLimit(s, resp)
 
-	// branche par défaut (fallback "main")
 	branch := repo.GetDefaultBranch()
 	if branch == "" {
 		branch = "main"
@@ -73,7 +73,7 @@ func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
 	commit := &github.Commit{
 		Author:  author,
 		Message: github.String("Spoofed empty commit"),
-		Tree:    &github.Tree{SHA: parentCommit.Tree.SHA}, // même tree => commit vide
+		Tree:    &github.Tree{SHA: parentCommit.Tree.SHA},
 		Parents: []*github.Commit{parentCommit},
 	}
 
@@ -108,6 +108,7 @@ func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
 		response.Name = last.GetAuthor().GetName()
 		response.Email = last.GetAuthor().GetEmail()
 		response.Url = last.GetAuthor().GetHTMLURL()
+		response.AvatarURL = last.GetAuthor().GetAvatarURL()
 	}
 
 	// 4) Cleanup

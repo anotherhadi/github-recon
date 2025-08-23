@@ -31,6 +31,9 @@ func email(settings github_recon_settings.Settings, datetime string) {
 		} else {
 			printTitle(settings.Silent, "🎭 Spoofing test")
 			result.Spoofing = recon.Spoofing(settings)
+			if result.Spoofing.AvatarURL != "" {
+				printAvatar(settings, result.Spoofing.AvatarURL)
+			}
 			printStruct(settings, result.Spoofing, 0)
 		}
 	}
