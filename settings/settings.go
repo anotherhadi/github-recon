@@ -33,6 +33,7 @@ type Settings struct {
 	DeepScan      bool
 	MaxDistance   int
 	HideAvatar    bool
+	SpoofEmail    bool
 
 	// Internal
 	Client *github.Client
@@ -94,6 +95,7 @@ func GetSettings() (settings Settings) {
 	)
 
 	flag.BoolVarP(&settings.Silent, "silent", "S", false, "Suppress all non-essential output")
+	flag.BoolVarP(&settings.SpoofEmail, "spoof-email", "", true, "Spoof email (only for email mode)")
 	flag.BoolVarP(&settings.HideAvatar, "hide-avatar", "h", false, "Hide the avatar in the output")
 	flag.StringVarP(&settings.JsonOutput, "json", "j", "", "Write results to specified JSON file")
 

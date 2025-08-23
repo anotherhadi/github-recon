@@ -25,7 +25,9 @@ func email(settings github_recon_settings.Settings, datetime string) {
 	result.Commits = recon.Commits(settings)
 	printStruct(settings, result.Commits, 0)
 
-	printTitle(settings.Silent, "🎭 Spoofing test")
-	result.Spoofing = recon.Spoofing(settings)
-	printStruct(settings, result.Spoofing, 0)
+	if settings.SpoofEmail {
+		printTitle(settings.Silent, "🎭 Spoofing test")
+		result.Spoofing = recon.Spoofing(settings)
+		printStruct(settings, result.Spoofing, 0)
+	}
 }
