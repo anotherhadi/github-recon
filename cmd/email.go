@@ -26,8 +26,12 @@ func email(settings github_recon_settings.Settings, datetime string) {
 	printStruct(settings, result.Commits, 0)
 
 	if settings.SpoofEmail {
-		printTitle(settings.Silent, "🎭 Spoofing test")
-		result.Spoofing = recon.Spoofing(settings)
-		printStruct(settings, result.Spoofing, 0)
+		if settings.Token == "null" {
+			settings.Logger.Warn("Skipping email spoofing test, please provide a Github token")
+		} else {
+			printTitle(settings.Silent, "🎭 Spoofing test")
+			result.Spoofing = recon.Spoofing(settings)
+			printStruct(settings, result.Spoofing, 0)
+		}
 	}
 }
