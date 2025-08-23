@@ -115,7 +115,7 @@ github-recon [--flags value] target_username_or_email
 -m, --max-distance int       Maximum Levenshtein distance for matching usernames & emails (only for deep scan) (default 20)
 -S, --silent                 Suppress all non-essential output
     --spoof-email            Spoof email (only for email mode) (default true)
--h, --hide-avatar            Hide the avatar in the output
+-a, --hide-avatar            Hide the avatar in the output
 -j, --json string            Write results to specified JSON file
 ```
 
