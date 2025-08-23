@@ -108,7 +108,7 @@ func GetSettings() (settings Settings) {
 		ReportCaller:    false,
 		ReportTimestamp: false,
 	})
-	settings.Ctx = context.Background()
+	settings.Ctx = context.WithValue(context.Background(), github.SleepUntilPrimaryRateLimitResetWhenRateLimited, true)
 
 	//// Tail
 	nonFlagArgs := flag.Args()
