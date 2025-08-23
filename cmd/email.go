@@ -37,4 +37,6 @@ func email(settings github_recon_settings.Settings, datetime string) {
 			printStruct(settings, result.Spoofing, 0)
 		}
 	}
+
+	writeJson(settings, result)
 }
