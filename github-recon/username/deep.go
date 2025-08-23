@@ -114,8 +114,6 @@ func DeepScan(s github_recon_settings.Settings) (response DeepScanResult) {
 		return
 	}
 
-	// r.PrintTitle("📦 Repositories")
-
 	for _, repo := range repos {
 		if slices.Contains(s.ExcludedRepos, repo.GetName()) ||
 			slices.Contains(s.ExcludedRepos, repo.GetOwner().GetLogin()+"/"+repo.GetName()) {
