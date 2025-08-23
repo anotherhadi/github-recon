@@ -42,6 +42,8 @@ func printStruct(settings github_recon_settings.Settings, s any, indent int) {
 			return
 		}
 
+		printed := 0
+
 		for i := 0; i < v.NumField(); i++ {
 			field := t.Field(i).Name
 			value := v.Field(i)
@@ -55,6 +57,7 @@ func printStruct(settings github_recon_settings.Settings, s any, indent int) {
 			if (field == "FirstFoundIn" || field == "FoundIn") && !settings.ShowSource {
 				continue
 			}
+			printed++
 
 			switch value.Kind() {
 			case reflect.Struct, reflect.Slice, reflect.Array, reflect.Ptr:
@@ -65,6 +68,9 @@ func printStruct(settings github_recon_settings.Settings, s any, indent int) {
 			default:
 				fmt.Printf("%s%s %s\n", prefix, greyStyle.Render(field+":"), greenStyle.Render(fmt.Sprintf("%v", value.Interface())))
 			}
+		}
+		if printed == 0 {
+			fmt.Println(prefix + greyStyle.Render("No data found"))
 		}
 		fmt.Println("")
 

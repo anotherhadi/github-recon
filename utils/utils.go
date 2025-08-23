@@ -110,7 +110,7 @@ func LevenshteinDistance(s1, s2 string) int {
 }
 
 func SkipResult(name, email string) bool {
-	if name == "github-actions[bot]" || name == "dependabot[bot]" || name == "github-actions" {
+	if name == "github-actions[bot]" || name == "dependabot[bot]" || name == "github-actions" || name == "GitHub Actions" {
 		return true
 	}
 	if email == "github-actions[bot]@users.noreply.github.com" || email == "noreply@github.com" ||

@@ -10,7 +10,8 @@ type EmailResult struct {
 	Target     string
 	TargetType github_recon_settings.TargetType
 
-	Commit recon.CommitsResult
+	Commits  recon.CommitsResult
+	Spoofing recon.SpoofingResult
 }
 
 func email(settings github_recon_settings.Settings, datetime string) {
@@ -21,6 +22,10 @@ func email(settings github_recon_settings.Settings, datetime string) {
 	}
 
 	printTitle(settings.Silent, "👤 Commits author")
-	result.Commit = recon.Email(settings)
-	printStruct(settings, result.Commit, 0)
+	result.Commits = recon.Commits(settings)
+	printStruct(settings, result.Commits, 0)
+
+	printTitle(settings.Silent, "🎭 Spoofing test")
+	result.Spoofing = recon.Spoofing(settings)
+	printStruct(settings, result.Spoofing, 0)
 }
