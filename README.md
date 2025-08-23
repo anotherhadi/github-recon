@@ -33,6 +33,11 @@ Retrieves and aggregates public OSINT data about a GitHub user using Go and the
 GitHub API. Finds hidden emails in commit history, previous usernames, friends,
 other GitHub accounts, and more.
 
+<details>
+<summary>Screenshot</summary>
+<img src="https://raw.githubusercontent.com/anotherhadi/github-recon/main/.github/assets/example.png" alt="example screenshot">
+</details>
+
 ## 🚀 Features
 
 - Export results to JSON
