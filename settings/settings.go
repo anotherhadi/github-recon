@@ -34,6 +34,7 @@ type Settings struct {
 	MaxDistance   int
 	HideAvatar    bool
 	SpoofEmail    bool
+	Trufflehog    bool
 
 	// Internal
 	Client *github.Client
@@ -92,6 +93,12 @@ func GetSettings() (settings Settings) {
 		"m",
 		20,
 		"Maximum Levenshtein distance for matching usernames & emails (only for deep scan)",
+	)
+	flag.BoolVar(
+		&settings.Trufflehog,
+		"trufflehog",
+		true,
+		"Run trufflehog on cloned repositories (only for deep scan)",
 	)
 
 	flag.BoolVarP(&settings.Silent, "silent", "S", false, "Suppress all non-essential output")

@@ -1,6 +1,8 @@
 package recon
 
 import (
+	"encoding/json"
+	"fmt"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -14,26 +16,34 @@ import (
 	"github.com/google/go-github/v72/github"
 )
 
-type Authors []AuthorOccurrence
+type Authors []Author
 
-type AuthorOccurrence struct {
+type Author struct {
 	Name        string
 	Levenshtein int
 	Email       string
 	FoundIn     []string
 }
 
-type Emails []EmailOccurrence
+type Emails []Email
 
-type EmailOccurrence struct {
+type Email struct {
 	Email       string
 	Levenshtein int
 	FoundIn     []string
 }
 
+type Secrets []Secret
+
+type Secret struct {
+	Repositorie string
+	Raw         map[string]any
+}
+
 type DeepScanResult struct {
-	Authors []AuthorOccurrence
-	Emails  []EmailOccurrence
+	Authors Authors
+	Emails  Emails
+	Secrets Secrets
 }
 
 type Repositorie struct {
@@ -41,62 +51,6 @@ type Repositorie struct {
 	Owner      string
 	Name       string
 	Size       int
-}
-
-func findEmailsAndOccurrencesInDir(rootPath string, username string) (Emails, error) {
-	emailLocations := make(map[string]map[string]bool)
-	emailRegex := regexp.MustCompile(`[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}`)
-	normalizedRootPath := filepath.Clean(rootPath)
-
-	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if !d.IsDir() {
-			if strings.Contains(path, ".git/logs/") {
-				return nil
-			}
-			content, err := os.ReadFile(path)
-			if err != nil {
-				return err
-			}
-
-			currentFileEmails := emailRegex.FindAllString(string(content), -1)
-			if len(currentFileEmails) > 0 {
-				relativePath, errRel := filepath.Rel(normalizedRootPath, path)
-				if errRel != nil {
-					relativePath = path
-				}
-
-				for _, email := range currentFileEmails {
-					if len(email) > 12 {
-						if _, ok := emailLocations[email]; !ok {
-							emailLocations[email] = make(map[string]bool)
-						}
-						emailLocations[email][relativePath] = true
-					}
-				}
-			}
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	var results []EmailOccurrence
-	for email, pathSet := range emailLocations {
-		var paths []string
-		for path := range pathSet {
-			paths = append(paths, path)
-		}
-		results = append(results, EmailOccurrence{
-			Email: email, FoundIn: paths,
-			Levenshtein: utils.LevenshteinDistance(username, strings.SplitN(email, "@", 2)[0]),
-		})
-	}
-
-	return results, nil
 }
 
 func DeepScan(s github_recon_settings.Settings) (response DeepScanResult) {
@@ -185,7 +139,7 @@ func DeepScan(s github_recon_settings.Settings) (response DeepScanResult) {
 	}
 	s.Logger.Info("Cloned all repositories", "path", tmp_folder)
 
-	authorOccurrences := []AuthorOccurrence{}
+	authorOccurrences := Authors{}
 	mapAuthorToIndex := make(map[string]int)
 	for _, repo := range repositories {
 		destination := tmp_folder + "/" + repo.Owner + "/" + repo.Name
@@ -244,7 +198,7 @@ func DeepScan(s github_recon_settings.Settings) (response DeepScanResult) {
 							continue
 						}
 
-						authorOccurrences = append(authorOccurrences, AuthorOccurrence{
+						authorOccurrences = append(authorOccurrences, Author{
 							Name:        authorName,
 							Email:       authorEmail,
 							FoundIn:     []string{repoIdentifier},
@@ -256,14 +210,14 @@ func DeepScan(s github_recon_settings.Settings) (response DeepScanResult) {
 			}
 		}
 	}
-	slices.SortFunc(authorOccurrences, func(a, b AuthorOccurrence) int {
+	slices.SortFunc(authorOccurrences, func(a, b Author) int {
 		if a.Levenshtein != b.Levenshtein {
 			return a.Levenshtein - b.Levenshtein
 		}
 		return 1
 	})
 
-	authors := []AuthorOccurrence{}
+	authors := Authors{}
 	for _, author := range authorOccurrences {
 		if author.Levenshtein > s.MaxDistance {
 			continue
@@ -280,14 +234,14 @@ func DeepScan(s github_recon_settings.Settings) (response DeepScanResult) {
 		s.Logger.Error("Failed to find emails in directory", "err", err)
 		return
 	}
-	slices.SortFunc(emailsFound, func(a, b EmailOccurrence) int {
+	slices.SortFunc(emailsFound, func(a, b Email) int {
 		if a.Levenshtein != b.Levenshtein {
 			return a.Levenshtein - b.Levenshtein
 		}
 		return 1
 	})
 
-	emails := []EmailOccurrence{}
+	emails := Emails{}
 	for _, email := range emailsFound {
 		if email.Levenshtein > s.MaxDistance {
 			continue
@@ -298,5 +252,131 @@ func DeepScan(s github_recon_settings.Settings) (response DeepScanResult) {
 	response.Authors = authors
 	response.Emails = emails
 
+	s.Logger.Info("Searching for secrets in cloned repositories", "path", tmp_folder)
+	if s.Trufflehog {
+		cmd := exec.Command("trufflehog", "--version")
+		if err := cmd.Run(); err != nil {
+			s.Logger.Warn("Trufflehog is not installed, skipping secret scanning.")
+		} else {
+			secrets, err := truffleHog(tmp_folder)
+			if err != nil {
+				s.Logger.Error("Failed to run trufflehog", "err", err)
+			} else {
+				response.Secrets = secrets
+			}
+		}
+	}
+
 	return
+}
+
+func truffleHog(tmpFolder string) (Secrets, error) {
+	allSecrets := Secrets{}
+
+	directories, err := os.ReadDir(tmpFolder)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read tmp folder: %w", err)
+	}
+
+	for _, dir := range directories {
+		if !dir.IsDir() {
+			continue
+		}
+
+		innerPath := filepath.Join(tmpFolder, dir.Name())
+		innerDirectories, err := os.ReadDir(innerPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read inner tmp folder: %w", err)
+		}
+
+		for _, innerDir := range innerDirectories {
+			if !innerDir.IsDir() {
+				continue
+			}
+
+			repoPath := filepath.Join(innerPath, innerDir.Name())
+			cmd := exec.Command("trufflehog", "git", "file://"+repoPath, "--json", "--log-level=-1", "--results=verified")
+			output, err := cmd.Output()
+
+			if err != nil {
+				if exitErr, ok := err.(*exec.ExitError); ok {
+					if exitErr.ExitCode() > 1 {
+						return nil, fmt.Errorf("failed to execute trufflehog (ExitError): %s", string(exitErr.Stderr))
+					}
+				} else {
+					return nil, fmt.Errorf("failed to execute trufflehog: %w", err)
+				}
+			}
+
+			decoder := json.NewDecoder(strings.NewReader(string(output)))
+			for decoder.More() {
+				var result map[string]any
+				if err := decoder.Decode(&result); err != nil {
+					return nil, fmt.Errorf("failed to parse trufflehog output: %w", err)
+				}
+				allSecrets = append(allSecrets, Secret{
+					Repositorie: dir.Name() + "/" + innerDir.Name(),
+					Raw:         result,
+				})
+			}
+		}
+	}
+
+	return allSecrets, nil
+}
+
+func findEmailsAndOccurrencesInDir(rootPath string, username string) (Emails, error) {
+	emailLocations := make(map[string]map[string]bool)
+	emailRegex := regexp.MustCompile(`[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}`)
+	normalizedRootPath := filepath.Clean(rootPath)
+
+	err := filepath.WalkDir(rootPath, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() {
+			if strings.Contains(path, ".git/logs/") {
+				return nil
+			}
+			content, err := os.ReadFile(path)
+			if err != nil {
+				return err
+			}
+
+			currentFileEmails := emailRegex.FindAllString(string(content), -1)
+			if len(currentFileEmails) > 0 {
+				relativePath, errRel := filepath.Rel(normalizedRootPath, path)
+				if errRel != nil {
+					relativePath = path
+				}
+
+				for _, email := range currentFileEmails {
+					if len(email) > 12 {
+						if _, ok := emailLocations[email]; !ok {
+							emailLocations[email] = make(map[string]bool)
+						}
+						emailLocations[email][relativePath] = true
+					}
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var results Emails
+	for email, pathSet := range emailLocations {
+		var paths []string
+		for path := range pathSet {
+			paths = append(paths, path)
+		}
+		results = append(results, Email{
+			Email: email, FoundIn: paths,
+			Levenshtein: utils.LevenshteinDistance(username, strings.SplitN(email, "@", 2)[0]),
+		})
+	}
+
+	return results, nil
 }

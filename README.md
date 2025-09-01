@@ -119,6 +119,7 @@ github-recon [--flags value] target_username_or_email
 -r, --refresh                Refresh the cache (only for deep scan)
 -s, --show-source            Show where the information (authors, emails, etc) were found (only for deep scan)
 -m, --max-distance int       Maximum Levenshtein distance for matching usernames & emails (only for deep scan) (default 20)
+    --trufflehog             Run trufflehog on cloned repositories (only for deep scan) (default true)
 -S, --silent                 Suppress all non-essential output
     --spoof-email            Spoof email (only for email mode) (default true)
 -a, --hide-avatar            Hide the avatar in the output

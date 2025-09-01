@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 
 	github_recon_settings "github.com/anotherhadi/github-recon/settings"
@@ -27,11 +28,17 @@ func printStruct(settings github_recon_settings.Settings, s any, indent int) {
 	prefix := strings.Repeat("  ", indent)
 
 	v := reflect.ValueOf(s)
+	if !v.IsValid() {
+		return
+	}
 	t := reflect.TypeOf(s)
 
-	if v.Kind() == reflect.Ptr {
+	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
+		if v.IsNil() {
+			return
+		}
 		v = v.Elem()
-		t = t.Elem()
+		t = v.Type()
 	}
 
 	switch v.Kind() {
@@ -43,7 +50,6 @@ func printStruct(settings github_recon_settings.Settings, s any, indent int) {
 		}
 
 		printed := 0
-
 		for i := 0; i < v.NumField(); i++ {
 			field := t.Field(i).Name
 			value := v.Field(i)
@@ -60,11 +66,13 @@ func printStruct(settings github_recon_settings.Settings, s any, indent int) {
 			printed++
 
 			switch value.Kind() {
-			case reflect.Struct, reflect.Slice, reflect.Array, reflect.Ptr:
+			case reflect.Struct, reflect.Slice, reflect.Array, reflect.Ptr, reflect.Map, reflect.Interface:
 				fmt.Println(prefix + greyStyle.Render(field+":"))
 				printStruct(settings, value.Interface(), indent+1)
+
 			case reflect.String:
 				fmt.Printf("%s%s %s\n", prefix, greyStyle.Render(field+":"), greenStyle.Render(fmt.Sprintf("%q", value.Interface())))
+
 			default:
 				fmt.Printf("%s%s %s\n", prefix, greyStyle.Render(field+":"), greenStyle.Render(fmt.Sprintf("%v", value.Interface())))
 			}
@@ -84,9 +92,31 @@ func printStruct(settings github_recon_settings.Settings, s any, indent int) {
 			printStruct(settings, v.Index(i).Interface(), indent)
 		}
 
+	case reflect.Map:
+		if v.Len() == 0 {
+			fmt.Println(prefix + greyStyle.Render("No data found"))
+			return
+		}
+
+		keys := v.MapKeys()
+		keyStrs := make([]string, len(keys))
+		for i, k := range keys {
+			keyStrs[i] = fmt.Sprintf("%v", k.Interface())
+		}
+		sort.Strings(keyStrs)
+
+		for _, keyStr := range keyStrs {
+			for _, k := range keys {
+				if fmt.Sprintf("%v", k.Interface()) == keyStr {
+					val := v.MapIndex(k)
+					fmt.Println(prefix + greyStyle.Render(fmt.Sprintf("%v:", k.Interface())))
+					printStruct(settings, val.Interface(), indent+1)
+				}
+			}
+		}
+
 	default:
 		fmt.Println(prefix + greenStyle.Render(fmt.Sprintf("%v", v.Interface())))
-		fmt.Println("")
 	}
 }
 
