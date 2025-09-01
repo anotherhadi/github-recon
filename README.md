@@ -166,7 +166,9 @@ Here’s the process:
 1. Create a new repository.
 2. Make a commit using the **target's email** as the author.
 3. Push the commit to GitHub.
-4. Observe which GitHub account gets associated with that commit.
+4. Observe which GitHub account the commit is linked to. This method **always
+   works**, but it only reveals the account if the email is set as the user’s
+   **primary email**.
 
 All of these steps are handled **automatically by the tool**, so you just need
 to provide the target email.
