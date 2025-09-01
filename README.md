@@ -55,6 +55,7 @@ other GitHub accounts, and more.
 - Deep scan option (clone repositories, run regex searches, analyze licenses,
   etc.)
 - Use Levenshtein distance for matching usernames and emails
+- TruffleHog integration to find secrets
 
 **From emails:**
 
