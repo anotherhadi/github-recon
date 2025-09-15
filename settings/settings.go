@@ -42,7 +42,34 @@ type Settings struct {
 	Ctx    context.Context
 }
 
+func GetDefaultSettings() Settings {
+	return Settings{
+		Token:         "null",
+		Target:        "",
+		TargetType:    TargetUsername,
+		ShowSource:    false,
+		Refresh:       false,
+		MaxRepoSize:   150,
+		ExcludedRepos: []string{},
+		JsonOutput:    "",
+		Silent:        false,
+		DeepScan:      false,
+		MaxDistance:   20,
+		HideAvatar:    false,
+		SpoofEmail:    true,
+		Trufflehog:    true,
+
+		Client: github.NewClient(nil),
+		Logger: log.NewWithOptions(os.Stderr, log.Options{
+			ReportCaller:    false,
+			ReportTimestamp: false,
+		}),
+		Ctx: context.WithValue(context.Background(), github.SleepUntilPrimaryRateLimitResetWhenRateLimited, true),
+	}
+}
+
 func GetSettings() (settings Settings) {
+	settings = GetDefaultSettings()
 	//// Flag settings
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
@@ -109,21 +136,13 @@ func GetSettings() (settings Settings) {
 	//// Parse
 	flag.Parse()
 
-	//// Setup
-	settings.Client = github.NewClient(nil)
-	settings.Logger = log.NewWithOptions(os.Stderr, log.Options{
-		ReportCaller:    false,
-		ReportTimestamp: false,
-	})
-	settings.Ctx = context.WithValue(context.Background(), github.SleepUntilPrimaryRateLimitResetWhenRateLimited, true)
-
 	//// Tail
 	nonFlagArgs := flag.Args()
 	if len(nonFlagArgs) > 1 {
 		settings.Logger.Error("Please provide only one target (username or email)")
 		flag.Usage()
 		os.Exit(1)
-	} else if len(nonFlagArgs) < 1 {
+	} else if len(nonFlagArgs) == 0 {
 		settings.Logger.Error("Please provide a target (username or email)")
 		flag.Usage()
 		os.Exit(1)
@@ -143,11 +162,11 @@ func GetSettings() (settings Settings) {
 	}
 
 	// If token is not set via flag, get it from env
-	if settings.Token == "null" {
+	if settings.Token == "null" || settings.Token == "" {
 		settings.Token = getToken()
 	}
 
-	if settings.Token == "null" {
+	if settings.Token == "null" || settings.Token == "" {
 		settings.Logger.Warn("No Github token provided. You might hit the rate limit. Check the help menu for more information.")
 	} else {
 		settings.Client = settings.Client.WithAuthToken(settings.Token)
