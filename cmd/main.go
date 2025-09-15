@@ -1,32 +1,32 @@
 package main
 
 import (
-	"time"
-
+	recon_email "github.com/anotherhadi/github-recon/github-recon/email"
+	recon_username "github.com/anotherhadi/github-recon/github-recon/username"
 	github_recon_settings "github.com/anotherhadi/github-recon/settings"
+	"github.com/anotherhadi/github-recon/utils"
 )
 
 func main() {
 	settings := github_recon_settings.GetSettings()
-	datetime := time.Now().String()
 
 	if !settings.Silent {
-		header()
+		utils.Header()
 
-		printStruct(settings, struct {
+		utils.PrintStruct(settings, struct {
 			Target     string
 			TargetType string
-			DateTime   string
 		}{
 			Target:     settings.Target,
 			TargetType: string(settings.TargetType),
-			DateTime:   datetime,
 		}, 0)
 	}
 
 	if settings.TargetType == github_recon_settings.TargetUsername {
-		username(settings, datetime)
+		result := recon_username.Username(settings)
+		writeJson(settings, result)
 	} else {
-		email(settings, datetime)
+		result := recon_email.Email(settings)
+		writeJson(settings, result)
 	}
 }

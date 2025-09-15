@@ -1,13 +1,17 @@
-package main
+package utils
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"os"
 	"reflect"
 	"sort"
 	"strings"
 
 	github_recon_settings "github.com/anotherhadi/github-recon/settings"
 	"github.com/charmbracelet/lipgloss"
+	gopixels "github.com/saran13raj/go-pixels"
 )
 
 var (
@@ -20,7 +24,7 @@ var (
 	titleStyle = lipgloss.NewStyle().Bold(true).Foreground(blue)
 )
 
-func printStruct(settings github_recon_settings.Settings, s any, indent int) {
+func PrintStruct(settings github_recon_settings.Settings, s any, indent int) {
 	if settings.Silent {
 		return
 	}
@@ -68,7 +72,7 @@ func printStruct(settings github_recon_settings.Settings, s any, indent int) {
 			switch value.Kind() {
 			case reflect.Struct, reflect.Slice, reflect.Array, reflect.Ptr, reflect.Map, reflect.Interface:
 				fmt.Println(prefix + greyStyle.Render(field+":"))
-				printStruct(settings, value.Interface(), indent+1)
+				PrintStruct(settings, value.Interface(), indent+1)
 
 			case reflect.String:
 				fmt.Printf("%s%s %s\n", prefix, greyStyle.Render(field+":"), greenStyle.Render(fmt.Sprintf("%q", value.Interface())))
@@ -89,7 +93,7 @@ func printStruct(settings github_recon_settings.Settings, s any, indent int) {
 			return
 		}
 		for i := 0; i < v.Len(); i++ {
-			printStruct(settings, v.Index(i).Interface(), indent)
+			PrintStruct(settings, v.Index(i).Interface(), indent)
 		}
 
 	case reflect.Map:
@@ -110,7 +114,7 @@ func printStruct(settings github_recon_settings.Settings, s any, indent int) {
 				if fmt.Sprintf("%v", k.Interface()) == keyStr {
 					val := v.MapIndex(k)
 					fmt.Println(prefix + greyStyle.Render(fmt.Sprintf("%v:", k.Interface())))
-					printStruct(settings, val.Interface(), indent+1)
+					PrintStruct(settings, val.Interface(), indent+1)
 				}
 			}
 		}
@@ -120,7 +124,7 @@ func printStruct(settings github_recon_settings.Settings, s any, indent int) {
 	}
 }
 
-func header() {
+func Header() {
 	asciiArt := "        __                       \n  ___ _/ /  _______ _______  ___ \n / _ `/ _ \\/ __/ -_) __/ _ \\/ _ \\\n \\_, /_//_/_/  \\__/\\__/\\___/_//_/\n/___/                            "
 
 	grey := lipgloss.Color("#7d7d7d")
@@ -131,9 +135,39 @@ func header() {
 	)
 }
 
-func printTitle(silent bool, title string) {
+func PrintTitle(silent bool, title string) {
 	if silent {
 		return
 	}
 	fmt.Println(titleStyle.Render(title) + "\n")
+}
+
+func PrintAvatar(settings github_recon_settings.Settings, url string) {
+	if settings.HideAvatar || url == "" || settings.Silent {
+		return
+	}
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	tmpfile, err := os.CreateTemp("", "avatar-*.png")
+	if err != nil {
+		return
+	}
+	defer os.Remove(tmpfile.Name())
+
+	_, err = io.Copy(tmpfile, resp.Body)
+	if err != nil {
+		return
+	}
+
+	output, err := gopixels.FromImagePath(tmpfile.Name(), 30, 25, "halfcell", true)
+
+	if err != nil {
+		return
+	}
+	fmt.Println(output + "\n")
 }
