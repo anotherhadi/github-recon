@@ -32,7 +32,7 @@ type Settings struct {
 	Silent        bool
 	DeepScan      bool
 	MaxDistance   int
-	HideAvatar    bool
+	PrintAvatar   bool
 	SpoofEmail    bool
 	Trufflehog    bool
 
@@ -55,7 +55,7 @@ func GetDefaultSettings() Settings {
 		Silent:        false,
 		DeepScan:      false,
 		MaxDistance:   20,
-		HideAvatar:    false,
+		PrintAvatar:   true,
 		SpoofEmail:    true,
 		Trufflehog:    true,
 
@@ -83,55 +83,55 @@ func GetSettings() (settings Settings) {
 	flag.CommandLine.SortFlags = false
 
 	//// Flags
-	flag.StringVarP(&settings.Token, "token", "t", "null", "Github personal access token (e.g. ghp_aaa...). Can also be set via GITHUB_RECON_TOKEN environment variable. You also need to set the token in $HOME/.config/github-recon/env file if you want to use this tool without passing the token every time.")
+	flag.StringVarP(&settings.Token, "token", "t", settings.Token, "Github personal access token (e.g. ghp_aaa...). Can also be set via GITHUB_RECON_TOKEN environment variable. You also need to set the token in $HOME/.config/github-recon/env file if you want to use this tool without passing the token every time.")
 
 	// DeepScan
-	flag.BoolVarP(&settings.DeepScan, "deepscan", "d", false, "Enable deep scan (clone repos, regex search, analyse licenses, etc.)")
+	flag.BoolVarP(&settings.DeepScan, "deepscan", "d", settings.DeepScan, "Enable deep scan (clone repos, regex search, analyse licenses, etc.)")
 	flag.IntVar(
 		&settings.MaxRepoSize,
 		"max-size",
-		150,
+		settings.MaxRepoSize,
 		"Limit the size of repositories to scan (in MB) (only for deep scan)",
 	)
 	flag.StringSliceVarP(
 		&settings.ExcludedRepos,
 		"exclude-repo",
 		"e",
-		[]string{},
+		settings.ExcludedRepos,
 		"Exclude repos from deep scan (comma-separated list, only for deep scan)",
 	)
 	flag.BoolVarP(
 		&settings.Refresh,
 		"refresh",
 		"r",
-		false,
+		settings.Refresh,
 		"Refresh the cache (only for deep scan)",
 	)
 	flag.BoolVarP(
 		&settings.ShowSource,
 		"show-source",
 		"s",
-		false,
+		settings.ShowSource,
 		"Show where the information (authors, emails, etc) were found (only for deep scan)",
 	)
 	flag.IntVarP(
 		&settings.MaxDistance,
 		"max-distance",
 		"m",
-		20,
+		settings.MaxDistance,
 		"Maximum Levenshtein distance for matching usernames & emails (only for deep scan)",
 	)
 	flag.BoolVar(
 		&settings.Trufflehog,
 		"trufflehog",
-		true,
+		settings.Trufflehog,
 		"Run trufflehog on cloned repositories (only for deep scan)",
 	)
 
-	flag.BoolVarP(&settings.Silent, "silent", "S", false, "Suppress all non-essential output")
-	flag.BoolVarP(&settings.SpoofEmail, "spoof-email", "", true, "Spoof email (only for email mode)")
-	flag.BoolVarP(&settings.HideAvatar, "hide-avatar", "a", false, "Hide the avatar in the output")
-	flag.StringVarP(&settings.JsonOutput, "json", "j", "", "Write results to specified JSON file")
+	flag.BoolVarP(&settings.Silent, "silent", "S", settings.Silent, "Suppress all non-essential output")
+	flag.BoolVarP(&settings.SpoofEmail, "spoof-email", "", settings.SpoofEmail, "Spoof email (only for email mode)")
+	flag.BoolVarP(&settings.PrintAvatar, "print-avatar", "a", settings.PrintAvatar, "Show the avatar in the output")
+	flag.StringVarP(&settings.JsonOutput, "json", "j", settings.JsonOutput, "Write results to specified JSON file")
 
 	//// Parse
 	flag.Parse()

@@ -123,7 +123,7 @@ github-recon [--flags value] target_username_or_email
     --trufflehog             Run trufflehog on cloned repositories (only for deep scan) (default true)
 -S, --silent                 Suppress all non-essential output
     --spoof-email            Spoof email (only for email mode) (default true)
--a, --hide-avatar            Hide the avatar in the output
+-a, --print-avatar           Show the avatar in the output
 -j, --json string            Write results to specified JSON file
 ```
 

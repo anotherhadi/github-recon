@@ -143,7 +143,7 @@ func PrintTitle(silent bool, title string) {
 }
 
 func PrintAvatar(settings github_recon_settings.Settings, url string) {
-	if settings.HideAvatar || url == "" || settings.Silent {
+	if !settings.PrintAvatar || url == "" || settings.Silent {
 		return
 	}
 
