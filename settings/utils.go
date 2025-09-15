@@ -9,7 +9,8 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
-func getToken() string {
+// GetToken retrieves the GitHub token from the environment variable or config file
+func GetToken() string {
 	token := os.Getenv("GITHUB_RECON_TOKEN")
 	if token != "" {
 		return token

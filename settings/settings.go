@@ -163,7 +163,7 @@ func GetSettings() (settings Settings) {
 
 	// If token is not set via flag, get it from env
 	if settings.Token == "null" || settings.Token == "" {
-		settings.Token = getToken()
+		settings.Token = GetToken()
 	}
 
 	if settings.Token == "null" || settings.Token == "" {
