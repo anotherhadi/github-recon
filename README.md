@@ -98,7 +98,7 @@ nix run github:anotherhadi/github-recon -- [--flags value] target_username_or_em
 
 # then add it to your packages
 environment.systemPackages = with pkgs; [ # or home.packages
-  github-recon
+  inputs.github-recon.defaultPackage.${pkgs.system}
 ];
 ```
 
