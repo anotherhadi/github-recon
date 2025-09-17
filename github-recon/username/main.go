@@ -39,6 +39,9 @@ func Username(settings github_recon_settings.Settings) (result UsernameResult, e
 	if err != nil {
 		return
 	}
+	if result.User == (UserResult{}) {
+		return
+	}
 	utils.PrintAvatar(settings, result.User.AvatarURL)
 	utils.PrintStruct(settings, result.User, 0)
 
