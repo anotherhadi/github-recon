@@ -202,7 +202,7 @@ func DeepScan(s github_recon_settings.Settings) (response DeepScanResult) {
 							Name:        authorName,
 							Email:       authorEmail,
 							FoundIn:     []string{repoIdentifier},
-							Levenshtein: utils.LevenshteinDistance(s.Target, authorName),
+							Levenshtein: levenshteinDistanceAuthor(s.Target, authorName, authorEmail),
 						})
 						mapAuthorToIndex[trimmedLine] = len(authorOccurrences) - 1
 					}
@@ -379,4 +379,11 @@ func findEmailsAndOccurrencesInDir(rootPath string, username string) (Emails, er
 	}
 
 	return results, nil
+}
+
+func levenshteinDistanceAuthor(target, name, email string) int {
+	if strings.Contains(email, "@") {
+		email = strings.SplitN(email, "@", 2)[0]
+	}
+	return slices.Min([]int{utils.LevenshteinDistance(target, name), utils.LevenshteinDistance(target, email)})
 }
