@@ -57,7 +57,9 @@ func PrintStruct(settings github_recon_settings.Settings, s any, indent int) {
 		for i := 0; i < v.NumField(); i++ {
 			field := t.Field(i).Name
 			value := v.Field(i)
-
+			if !value.CanInterface() {
+				continue
+			}
 			if !value.IsValid() || (value.Kind() == reflect.String && value.String() == "") {
 				continue
 			}
