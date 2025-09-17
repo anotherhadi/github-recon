@@ -2,6 +2,7 @@ package recon
 
 import (
 	"math/rand"
+	"time"
 
 	github_recon_settings "github.com/anotherhadi/github-recon/settings"
 	"github.com/anotherhadi/github-recon/utils"
@@ -99,21 +100,27 @@ func Spoofing(s github_recon_settings.Settings) (response *SpoofingResult) {
 	}
 	utils.WaitForRateLimit(s, resp)
 
-	commits, _, err := s.Client.Repositories.ListCommits(s.Ctx, repo.Owner.GetLogin(), name, nil)
-	if err != nil {
-		s.Logger.Error("Error while listing commits", "err", err)
-		return
-	}
+	const maxRetries = 5
+	const retryDelay = 2 * time.Second
+	for i := 0; i < maxRetries; i++ {
+		commits, _, err := s.Client.Repositories.ListCommits(s.Ctx, repo.Owner.GetLogin(), name, nil)
+		if err != nil {
+			s.Logger.Error("Error while listing commits", "err", err)
+			return
+		}
 
-	if len(commits) > 1 {
-		last := commits[0]
-		response.Username = last.GetAuthor().GetLogin()
-		response.Name = last.GetAuthor().GetName()
-		response.Email = last.GetAuthor().GetEmail()
-		response.Url = last.GetAuthor().GetHTMLURL()
-		response.AvatarURL = last.GetAuthor().GetAvatarURL()
-	} else {
-		s.Logger.Error("Only one commit found, something went wrong.", "commits", commits)
+		if len(commits) > 1 {
+			last := commits[0]
+			response.Username = last.GetAuthor().GetLogin()
+			response.Name = last.GetAuthor().GetName()
+			response.Email = last.GetAuthor().GetEmail()
+			response.Url = last.GetAuthor().GetHTMLURL()
+			response.AvatarURL = last.GetAuthor().GetAvatarURL()
+			break
+		}
+
+		s.Logger.Info("Only one commit found, retrying...", "attempt", i+1)
+		time.Sleep(retryDelay)
 	}
 
 	if response.Username == "" && response.Name == "" && response.Email == "" {
