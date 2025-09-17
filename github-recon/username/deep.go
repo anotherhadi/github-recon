@@ -334,13 +334,13 @@ func findEmailsAndOccurrencesInDir(rootPath string, username string) (Emails, er
 		if err != nil {
 			return err
 		}
-		if !d.IsDir() {
+		if d.Type().IsRegular() {
 			if strings.Contains(path, ".git/logs/") {
 				return nil
 			}
 			content, err := os.ReadFile(path)
 			if err != nil {
-				return err
+				return nil
 			}
 
 			currentFileEmails := emailRegex.FindAllString(string(content), -1)
