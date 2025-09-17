@@ -13,7 +13,11 @@ import (
 type CloseFriendsResult []CloseFriendResult
 
 type CloseFriendResult struct {
+	Name     string
 	Username string
+	Orgs     []string
+	Company  string
+	Location string
 	Score    int
 }
 
@@ -96,8 +100,12 @@ func CloseFriends(s github_recon_settings.Settings) (results CloseFriendsResult)
 		// Add candidate if they matched at least one condition
 		if score > 0 {
 			results = append(results, CloseFriendResult{
+				Name:     candidateDetails.GetName(),
 				Username: candidateLogin,
+				Orgs:     candidateOrgsToNames(candidateOrgs),
 				Score:    score,
+				Location: candidateDetails.GetLocation(),
+				Company:  candidateDetails.GetCompany(),
 			})
 		}
 	}
@@ -129,6 +137,15 @@ func checkIfUserFollows(s github_recon_settings.Settings, sourceUser, targetUser
 		utils.WaitForRateLimit(s, resp)
 	}
 	return isFollowing, nil
+}
+func candidateOrgsToNames(orgs []*github.Organization) []string {
+	var orgNames []string
+	for _, org := range orgs {
+		if org.GetLogin() != "" {
+			orgNames = append(orgNames, org.GetLogin())
+		}
+	}
+	return orgNames
 }
 
 func getOrgs(s github_recon_settings.Settings, user string) ([]*github.Organization, error) {
