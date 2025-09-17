@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	recon_email "github.com/anotherhadi/github-recon/github-recon/email"
 	recon_username "github.com/anotherhadi/github-recon/github-recon/username"
 	github_recon_settings "github.com/anotherhadi/github-recon/settings"
@@ -8,7 +10,10 @@ import (
 )
 
 func main() {
-	settings := github_recon_settings.GetSettings()
+	settings, err := github_recon_settings.GetSettings()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	if !settings.Silent {
 		utils.Header()
@@ -23,7 +28,10 @@ func main() {
 	}
 
 	if settings.TargetType == github_recon_settings.TargetUsername {
-		result := recon_username.Username(settings)
+		result, err := recon_username.Username(settings)
+		if err != nil {
+			log.Fatal(err)
+		}
 		writeJson(settings, result)
 	} else {
 		result := recon_email.Email(settings)

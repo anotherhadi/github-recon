@@ -31,13 +31,13 @@ type UserResult struct {
 	Plan              string
 }
 
-func User(s github_recon_settings.Settings) (response UserResult) {
+func User(s github_recon_settings.Settings) (response UserResult, err error) {
 	user, resp, err := s.Client.Users.Get(s.Ctx, s.Target)
 	if resp.StatusCode == 404 {
-		s.Logger.Fatal("User not found with username")
+		return UserResult{}, fmt.Errorf("user not found with username: %s", s.Target)
 	}
 	if err != nil {
-		s.Logger.Fatal("Failed to fetch user's information", "err", err)
+		return UserResult{}, fmt.Errorf("failed to fetch user's information")
 	}
 
 	u := UserResult{
@@ -65,5 +65,5 @@ func User(s github_recon_settings.Settings) (response UserResult) {
 	}
 
 	utils.WaitForRateLimit(s, resp)
-	return u
+	return u, nil
 }

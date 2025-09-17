@@ -68,7 +68,7 @@ func GetDefaultSettings() Settings {
 	}
 }
 
-func GetSettings() (settings Settings) {
+func GetSettings() (settings Settings, err error) {
 	settings = GetDefaultSettings()
 	//// Flag settings
 	flag.Usage = func() {
@@ -152,7 +152,7 @@ func GetSettings() (settings Settings) {
 	settings.Target = strings.TrimPrefix(settings.Target, "@") // Remove the @ of the username
 
 	if strings.Contains(settings.Target, " ") {
-		settings.Logger.Fatal("Target cannot contain spaces")
+		err = fmt.Errorf("target cannot contain spaces")
 	}
 
 	if strings.Contains(settings.Target, "@") {

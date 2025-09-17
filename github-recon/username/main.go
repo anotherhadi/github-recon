@@ -27,16 +27,18 @@ type UsernameResult struct {
 	DeepScan DeepScanResult
 }
 
-func Username(settings github_recon_settings.Settings) UsernameResult {
-
-	result := UsernameResult{
+func Username(settings github_recon_settings.Settings) (result UsernameResult, err error) {
+	result = UsernameResult{
 		Target:     settings.Target,
 		TargetType: settings.TargetType,
 		DateTime:   time.Now().String(),
 	}
 
 	utils.PrintTitle(settings.Silent, "👤 User informations")
-	result.User = User(settings)
+	result.User, err = User(settings)
+	if err != nil {
+		return
+	}
 	utils.PrintAvatar(settings, result.User.AvatarURL)
 	utils.PrintStruct(settings, result.User, 0)
 
@@ -74,5 +76,5 @@ func Username(settings github_recon_settings.Settings) UsernameResult {
 		utils.PrintStruct(settings, result.DeepScan, 0)
 	}
 
-	return result
+	return
 }
