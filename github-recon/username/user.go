@@ -34,7 +34,7 @@ type UserResult struct {
 func User(s github_recon_settings.Settings) (response UserResult, err error) {
 	user, resp, err := s.Client.Users.Get(s.Ctx, s.Target)
 	if resp.StatusCode == 404 {
-		return UserResult{}, fmt.Errorf("user not found with username: %s", s.Target)
+		return UserResult{}, nil
 	}
 	if err != nil {
 		return UserResult{}, fmt.Errorf("failed to fetch user's information")
