@@ -139,6 +139,11 @@ func DeepScan(s github_recon_settings.Settings) (response DeepScanResult) {
 	}
 	s.Logger.Info("Cloned all repositories", "path", tmp_folder)
 
+	if len(repositories) == 0 {
+		s.Logger.Info("No repositories found for the user, skipping deep scan.")
+		return
+	}
+
 	authorOccurrences := Authors{}
 	mapAuthorToIndex := make(map[string]int)
 	for _, repo := range repositories {
