@@ -13,7 +13,7 @@ type EmailResult struct {
 	TargetType github_recon_settings.TargetType
 
 	Commits  CommitsResult
-	Spoofing SpoofingResult
+	Spoofing *SpoofingResult
 }
 
 func Email(settings github_recon_settings.Settings) EmailResult {
@@ -33,7 +33,7 @@ func Email(settings github_recon_settings.Settings) EmailResult {
 		} else {
 			utils.PrintTitle(settings.Silent, "🎭 Spoofing test")
 			result.Spoofing = Spoofing(settings)
-			if result.Spoofing.AvatarURL != "" {
+			if result.Spoofing != nil && result.Spoofing.AvatarURL != "" {
 				utils.PrintAvatar(settings, result.Spoofing.AvatarURL)
 			}
 			utils.PrintStruct(settings, result.Spoofing, 0)

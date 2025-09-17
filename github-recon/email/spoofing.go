@@ -26,7 +26,8 @@ func RandomString(n int) string {
 	return string(b)
 }
 
-func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
+func Spoofing(s github_recon_settings.Settings) (response *SpoofingResult) {
+	response = &SpoofingResult{}
 	name := "gh-recon-spoofing-" + RandomString(8)
 	private := true
 	autoInit := true
@@ -40,6 +41,13 @@ func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
 		return
 	}
 	utils.WaitForRateLimit(s, resp)
+
+	defer func() {
+		_, err = s.Client.Repositories.Delete(s.Ctx, repo.Owner.GetLogin(), name)
+		if err != nil {
+			s.Logger.Error("Error while deleting repo", "err", err)
+		}
+	}()
 
 	branch := repo.GetDefaultBranch()
 	if branch == "" {
@@ -57,7 +65,6 @@ func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
 	ref, resp, err := s.Client.Git.GetRef(s.Ctx, repo.Owner.GetLogin(), name, refName)
 	if err != nil {
 		s.Logger.Error("Error while getting ref", "err", err)
-		s.Logger.Warn("The temp repo was left undeleted", "repo", repo.GetHTMLURL())
 		return
 	}
 	utils.WaitForRateLimit(s, resp)
@@ -65,7 +72,6 @@ func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
 	parentCommit, resp, err := s.Client.Git.GetCommit(s.Ctx, repo.Owner.GetLogin(), name, ref.GetObject().GetSHA())
 	if err != nil {
 		s.Logger.Error("Error while getting parent commit", "err", err)
-		s.Logger.Warn("The temp repo was left undeleted", "repo", repo.GetHTMLURL())
 		return
 	}
 	utils.WaitForRateLimit(s, resp)
@@ -81,7 +87,6 @@ func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
 	newCommit, resp, err := s.Client.Git.CreateCommit(s.Ctx, repo.Owner.GetLogin(), name, commit, nil)
 	if err != nil {
 		s.Logger.Error("Error while creating spoofed empty commit", "err", err)
-		s.Logger.Warn("The temp repo was left undeleted", "repo", repo.GetHTMLURL())
 		return
 	}
 	utils.WaitForRateLimit(s, resp)
@@ -90,7 +95,6 @@ func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
 	_, resp, err = s.Client.Git.UpdateRef(s.Ctx, repo.Owner.GetLogin(), name, ref, false)
 	if err != nil {
 		s.Logger.Error("Error while updating ref to spoofed commit", "err", err)
-		s.Logger.Warn("The temp repo was left undeleted", "repo", repo.GetHTMLURL())
 		return
 	}
 	utils.WaitForRateLimit(s, resp)
@@ -98,23 +102,22 @@ func Spoofing(s github_recon_settings.Settings) (response SpoofingResult) {
 	commits, _, err := s.Client.Repositories.ListCommits(s.Ctx, repo.Owner.GetLogin(), name, nil)
 	if err != nil {
 		s.Logger.Error("Error while listing commits", "err", err)
-		s.Logger.Warn("The temp repo was left undeleted", "repo", repo.GetHTMLURL())
 		return
 	}
 
-	if len(commits) > 0 {
+	if len(commits) > 1 {
 		last := commits[0]
 		response.Username = last.GetAuthor().GetLogin()
 		response.Name = last.GetAuthor().GetName()
 		response.Email = last.GetAuthor().GetEmail()
 		response.Url = last.GetAuthor().GetHTMLURL()
 		response.AvatarURL = last.GetAuthor().GetAvatarURL()
+	} else {
+		s.Logger.Error("Only one commit found, something went wrong.", "commits", commits)
 	}
 
-	_, err = s.Client.Repositories.Delete(s.Ctx, repo.Owner.GetLogin(), name)
-	if err != nil {
-		s.Logger.Error("Error while deleting repo", "err", err)
+	if response.Username == "" && response.Name == "" && response.Email == "" {
+		return nil
 	}
-
 	return
 }
