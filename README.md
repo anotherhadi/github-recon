@@ -195,8 +195,9 @@ privacy and security:
   information.
 - **Manage email exposure**: Use GitHub's settings to control which email
   addresses are visible on your profile and in commit history. You can also use
-  a no-reply email address for commits. Delete/modify any sensitive information
-  in your commit history.
+  a no-reply email address for commits, and an
+  [alias email](https://proton.me/support/addresses-and-aliases) for your
+  account. Delete/modify any sensitive information in your commit history.
 - **Be Mindful of Repository Content**: Avoid including sensitive information in
   your repositories, such as API keys, passwords, emails or personal data. Use
   `.gitignore` to exclude files that contain sensitive information.
