@@ -23,7 +23,7 @@ func Orgs(s github_recon_settings.Settings) (response OrgsResult) {
 	for _, org := range orgs {
 		o := OrgResult{
 			Name:        org.GetLogin(),
-			URL:         org.GetURL(),
+			URL:         org.GetHTMLURL(),
 			Description: org.GetDescription(),
 		}
 		response = append(response, o)

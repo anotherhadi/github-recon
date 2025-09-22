@@ -82,7 +82,7 @@ func DeepScan(s github_recon_settings.Settings) (response DeepScanResult) {
 		}
 
 		repositories = append(repositories, Repositorie{
-			Repository: repo.GetCloneURL(),
+			Repository: repo.GetHTMLURL(),
 			Owner:      repo.GetOwner().GetLogin(),
 			Name:       repo.GetName(),
 			Size:       repo.GetSize(),
