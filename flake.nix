@@ -14,7 +14,7 @@
       (system: f system (import nixpkgs {inherit system;}));
 
     pname = "github-recon";
-    version = "2.1.0";
+    version = "1.5.3";
 
     ldflags = ["-s" "-w"];
   in {
