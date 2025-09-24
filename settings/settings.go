@@ -72,7 +72,7 @@ func GetSettings() (settings Settings, err error) {
 	settings = GetDefaultSettings()
 	//// Flag settings
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Usage:\n", os.Args[0])
 		fmt.Fprintf(os.Stderr, "github-recon [flags] <target username or email>\n")
 		fmt.Fprintf(os.Stderr, "\n")
 		fmt.Fprintf(os.Stderr, "Flags:\n")
