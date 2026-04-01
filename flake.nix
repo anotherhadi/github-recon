@@ -30,7 +30,7 @@
           cp $GOPATH/bin/cmd $out/bin/github-recon
         '';
 
-        vendorHash = "sha256-AD0h0k2n8gPqSBz5qqb0ZON/jWiSEWpeO97xR7cYSy8=";
+        vendorHash = "sha256-16mRhQyoyY3M98cWBURsEvvwVT6aR3JWk8YfAFNfm/A=";
 
         meta = with pkgs.lib; {
           description = "Retrieves and aggregates public OSINT data about a Github user using Go and the Github API. Finds hidden emails in commit history, previous usernames, friends, other Github accounts, and more.";
