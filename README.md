@@ -77,32 +77,19 @@ go install github.com/anotherhadi/github-recon@latest
 
 ### With Nix/NixOS
 
-<details>
-<summary>Click to expand</summary>
+With Nix, from the [anotherhadi NUR](https://github.com/anotherhadi/nur-packages):
 
-**From anywhere (using the repo URL):**
-
-```bash
-nix run github:anotherhadi/github-recon -- [--flags value] target_username_or_email
+```sh
+nix run github:anotherhadi/nur-packages#github-recon
 ```
 
-**Permanent Installation:**
+```nix
+# flake: inputs.nur-anotherhadi.url = "github:anotherhadi/nur-packages";
+environment.systemPackages = [ nur-anotherhadi.packages.${system}.github-recon ];
 
-```bash
-# add the flake to your flake.nix
-{
-  inputs = {
-    github-recon.url = "github:anotherhadi/github-recon";
-  };
-}
-
-# then add it to your packages
-environment.systemPackages = with pkgs; [ # or home.packages
-  inputs.github-recon.defaultPackage.${pkgs.system}
-];
+# or through NUR
+environment.systemPackages = [ pkgs.nur.repos.anotherhadi.github-recon ];
 ```
-
-</details>
 
 ## 🧪 Usage
 
